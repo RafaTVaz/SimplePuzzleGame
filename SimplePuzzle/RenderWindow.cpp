@@ -19,7 +19,6 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 	}
 	else
 	{
-	
 		//Get window surface Not compatible with rendering
 		/*screenSurface = SDL_GetWindowSurface(window);
 
@@ -93,17 +92,24 @@ bool RenderWindow::loadMedia()
 	backgroundIMG = loadTexture("assets/background-blue.png");
 	if (backgroundIMG == NULL)
 	{
-		printf("Failed to load texture image!\n");
+		printf("Failed to load texture background!\n");
+		success = false;
+	}
+	ui_IMG = loadTexture("assets/Frame.png");
+	if (backgroundIMG == NULL)
+	{
+		printf("Failed to load texture UI image!\n");
 		success = false;
 	}
 	texture = loadTexture("assets/sprite-1.png");
 	if (texture == NULL)
 	{
-		printf("Failed to load texture image!\n");
+		printf("Failed to load texture sprite!\n");
 		success = false;
 	}
 	return success;
 }
+
 
 SDL_Texture* RenderWindow::loadTexture(const char* p_path)
 {
@@ -134,46 +140,45 @@ SDL_Texture* RenderWindow::loadTexture(const char* p_path)
 
 void RenderWindow::display()
 {
-	//Apply the PNG image directly to window, no scaling
-	// SDL Surface is CPU-bound
-		//SDL_BlitSurface(gPNGSurface, NULL, gScreenSurface, NULL);
-
-	//Apply the image stretched
-	//SDL_Rect stretchRect;
-	//stretchRect.x = 0;
-	//stretchRect.y = 0;
-	//stretchRect.w = screenW;
-	//stretchRect.h = screenH;
-	//SDL_BlitScaled(backgroundPNG, NULL, screenSurface, &stretchRect);
-	////Update the surface
-	//SDL_UpdateWindowSurface(window);
-
-
 	//Clear screen
 	SDL_RenderClear(renderer);
 
-	//Render texture to screen
-	SDL_RenderCopy(renderer, backgroundIMG, NULL, NULL);
-
-	//SDL_Rect pos;
-	///*renderer gets generic position from piece 
-	//translates it into screen coordinates
-	//*/
-	//pos.x = gameCurrent->testPiece.pos.x * 10;
-	//
-	//pos.y = gameCurrent->testPiece.pos.y;
-	//pos.w = 64; pos.h = 64;
-	//SDL_RenderCopy(renderer, texture, NULL, &pos);
+	renderBackground();
 	renderPieces();
-
+	renderUI();
 	//Update screen
 	SDL_RenderPresent(renderer);
+	countedFrames++;
 }
 
 void RenderWindow::renderBackground()
 {
-
+	//Render texture to screen
+	SDL_RenderCopy(renderer, backgroundIMG, NULL, NULL);
 }
+
+void RenderWindow::renderUI()
+{
+	//GridBox
+	int scale = 2; //screen multiplier
+	SDL_Rect pos;
+	pos.x = pos.y = 0;
+	pos.w = 160 * scale;
+	pos.h = 288 * scale;
+	SDL_RenderCopy(renderer, ui_IMG, NULL, &pos);
+
+	
+	//Calculate and correct fps
+	//float avgFPS = countedFrames / (gameCurrent->getTimePassed());
+	//if (avgFPS > 2000000)
+	//{
+	//	avgFPS = 0;
+	//}
+	//
+	//Render textures
+}
+
+
 
 void RenderWindow::renderPieces()
 {
@@ -187,23 +192,33 @@ void RenderWindow::renderPieces()
 	SDL_RenderCopy(renderer, texture, NULL, &pos);
 }
 
-
-void RenderWindow::close()
+void RenderWindow::setGame(Game* gameInstance)
 {
-	//Free loaded image
-	if (backgroundPNG != NULL) 
+	gameCurrent = gameInstance;
+}
+
+bool RenderWindow::destroyTextures()
+{
+	if (backgroundPNG != NULL)
 	{
 		SDL_FreeSurface(backgroundPNG);
 		backgroundPNG = NULL;
 	}
-	if (texture != NULL || backgroundIMG != NULL)
-	{
-		SDL_DestroyTexture(texture);
-		SDL_DestroyTexture(backgroundIMG);
-		texture = NULL;
-		backgroundIMG = NULL;
-	}
 
+	SDL_DestroyTexture(texture);
+	SDL_DestroyTexture(backgroundIMG);
+	SDL_DestroyTexture(ui_IMG);
+	texture = NULL;
+	backgroundIMG = NULL;
+	ui_IMG = NULL;
+
+	return true;
+}
+
+void RenderWindow::close()
+{
+	//Destroy all loaded images, text, sprites
+	destroyTextures();
 
 	//Destroy window
 	SDL_DestroyRenderer(renderer);
@@ -216,7 +231,4 @@ void RenderWindow::close()
 	SDL_Quit();
 }
 
-void RenderWindow::setGame(Game* gameInstance)
-{
-	gameCurrent = gameInstance;
-}
+

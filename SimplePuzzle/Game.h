@@ -5,6 +5,7 @@
 #include <string>
 
 #include "Piece.h"
+#include "Timer.h"
 
 
 struct GameInput
@@ -28,6 +29,15 @@ struct GameInput
 //#endif
 };
 
+struct Animation 
+{
+	const int fps_falling = 6; //probs 6; changes with difficulty
+	const int fps_spriteAnim = 2;
+
+	Uint32 elapsedTime = 0;
+	Uint32 lastTime = 0;
+};
+
 
 class Game
 {
@@ -38,14 +48,18 @@ public:
 	void updateGame(); //every X seconds
 	//void updatePlay(Piece* test); //Player input happened
 	void updatePlay(); //Player input happened
+	double getTimePassed();
 	bool isMovePossible(Position newPos);
 
 	bool isQuit();
 
 	Piece testPiece; 
 private:
+	Animation animTiming;
+	Timer timer;
 	GameInput gameInput{}; //FIXME should be in private
 	SDL_Event event;
+	int gameSpeed = 1;
 	bool quit;
 };
 

@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -113,7 +113,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -137,6 +137,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Piece.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\background-blue.png" />
@@ -148,6 +149,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Piece.h" />
     <ClInclude Include="RenderWindow.h" />
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

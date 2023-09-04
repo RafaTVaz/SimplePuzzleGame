@@ -6,7 +6,7 @@ std::mt19937 gen(rd()); //random_engine
 
 Piece::Piece()
 {
-	pos = {}; //{0,0} - {8,16}
+	pos = {}; //{1,1} - {8,16}
 	pos.x = random(1, 8);
 	pos.y = random(1, 16); //FIXME should always be top of grid
 	//color = { 100, 0, 0, 1 };
@@ -19,6 +19,16 @@ int Piece::random(int low, int high)
 { //tested works
 	std::uniform_int_distribution<> dist(low, high);
 	return dist(gen);
+}
+
+void Piece::bufferMove()
+{
+	++pos.buffer;
+	if (pos.buffer >= 16)
+	{
+		pos.buffer = 0;
+		++pos.y;
+	}
 }
 
 
@@ -34,7 +44,7 @@ Position Piece::getRealPos()
 {
 	Position realPos{
 		pos.x * getGridSize(),
-		pos.y * getGridSize()
+		pos.y * getGridSize() + pos.buffer * screenMultiplier
 	};
 	return realPos;
 }

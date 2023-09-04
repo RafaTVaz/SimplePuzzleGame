@@ -12,7 +12,8 @@
 */
 struct Position
 {
-	int x, y;
+	int x, y;   //{1, 1} - {8, 16}
+	int buffer; //0 - 15   0 means grid position, rest is animation
 };
 
 struct Color
@@ -29,6 +30,7 @@ public:
 	int random(int low, int high);
 	Position pos;
 	//Color color;
+	void bufferMove();
 	int getGridSize();
 	Position getRealPos();
 private:
