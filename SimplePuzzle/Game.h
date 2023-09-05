@@ -31,13 +31,12 @@ struct GameInput
 
 struct Animation 
 {
-	const int fps_falling = 6; //probs 6; changes with difficulty
-	const int fps_spriteAnim = 2;
+	static const int fps_falling = 2; //probs 6; changes with difficulty
+	static const int fps_spriteAnim = 2;
 
-	Uint32 elapsedTime = 0;
-	Uint32 lastTime = 0;
+	double elapsedTime = 0;
+	double lastTime = 0;
 };
-
 
 class Game
 {
@@ -49,17 +48,23 @@ public:
 	//void updatePlay(Piece* test); //Player input happened
 	void updatePlay(); //Player input happened
 	double getTimePassed();
-	bool isMovePossible(Position newPos);
 
 	bool isQuit();
 
-	Piece testPiece; 
+	Piece testPiece; //FIXME pieces should be private
+	Piece pieceMatrix[8][16];
 private:
+	bool isMovePossible(Position newPos);
+	bool isMoveFinal(Position newPos);
+	bool placedPiece = false; //playable piece is placed
 	Animation animTiming;
 	Timer timer;
-	GameInput gameInput{}; //FIXME should be in private
-	SDL_Event event;
+	GameInput gameInput{};
+
 	int gameSpeed = 1;
 	bool quit;
+
+
+	SDL_Event event;
 };
 

@@ -22,7 +22,7 @@ const int SCREEN_HEIGHT = 640;
 bool init();
 
 //calculates and prints average fps
-void printFPS(float& t_elapsed, Uint64 t_start, Uint64 t_end, int& t_counter);
+void calculateFPS(float& t_elapsed, Uint64 t_start, Uint64 t_end, int& t_counter, double& t_fps);
 
 //Frees media and shuts down SDL
 void close();
@@ -63,13 +63,14 @@ bool init()
 	return success;
 }
 
-void printFPS(float& t_elapsed, Uint64 t_start, Uint64 t_end, int& t_counter)
+void calculateFPS(float& t_elapsed, Uint64 t_start, Uint64 t_end, int& t_counter, double& t_fps)
 {
 	t_elapsed += (t_end - t_start) / (float)SDL_GetPerformanceFrequency();
 	if (t_counter > 60)
 	{
 		t_elapsed = t_elapsed / t_counter;
-		std::cout << "Current FPS: " << std::to_string(1.0f / t_elapsed) << std::endl;
+		t_fps = 1.0f / t_elapsed;
+		//std::cout << "Current FPS: " << std::to_string(t_fps) << std::endl;
 		t_counter = 0;
 		t_elapsed = 0;
 	}
@@ -106,13 +107,14 @@ int main(int argc, char* args[])
 
 			////Event handler
 			//SDL_Event e;
+			int counter = 0; float elapsed = 0;
+			double fps = 0;
+			Uint64 start = 0, end = 0;
 
 			//initialize Game
 			gameLogic = new Game();
-			gWindow->setGame(gameLogic);
+			gWindow->setGame(gameLogic, &fps);
 			
-			int counter = 0; float elapsed = 0;
-			Uint64 start = 0, end = 0;
 			//While application is running
 			while (!gameLogic->isQuit())
 			{
@@ -122,11 +124,10 @@ int main(int argc, char* args[])
 				gameLogic->run();
 				gWindow->display();
 
-
-				end = SDL_GetPerformanceCounter();
 				/*print average framerate ~60fps 
 				sets elapsed&counter to 0 every second*/
-				printFPS(elapsed, start, end, counter);
+				end = SDL_GetPerformanceCounter();
+				calculateFPS(elapsed, start, end, counter, fps);
 			}
 		}
 	}

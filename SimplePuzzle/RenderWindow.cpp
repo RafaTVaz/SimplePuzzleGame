@@ -29,7 +29,7 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 		}*/
 
 		//Create renderer for window
-		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC |SDL_RENDERER_ACCELERATED);
 		if (renderer == NULL)
 		{
 			printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
@@ -47,11 +47,42 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 				printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 				window = NULL;
 			}
+			//Initialize SDL_ttf
+			if (TTF_Init() == -1)
+			{
+				printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+				window = NULL;
+			}
 		}
 	}
 }
 
+void RenderWindow::drawText(const char* text, int x, int y) 
+{
+	SDL_assert(text);
 
+	SDL_Surface* pSurface = TTF_RenderText_Blended(fontBig, text, colWhite);
+	SDL_Texture* pTexture = SDL_CreateTextureFromSurface(renderer, pSurface);
+	int w, h;
+	SDL_QueryTexture(pTexture, NULL, NULL, &w, &h);
+	SDL_Rect dstRect = { x, y, w, h };
+	SDL_RenderCopy(renderer, pTexture, nullptr, &dstRect);
+	SDL_DestroyTexture(pTexture);
+	SDL_FreeSurface(pSurface);
+}
+void RenderWindow::drawText(const char* text, int x, int y, TTF_Font* font, SDL_Color color)
+{
+	SDL_assert(text);
+
+	SDL_Surface* pSurface = TTF_RenderText_Blended(font, text, color);
+	SDL_Texture* pTexture = SDL_CreateTextureFromSurface(renderer, pSurface);
+	int w, h;
+	SDL_QueryTexture(pTexture, NULL, NULL, &w, &h);
+	SDL_Rect dstRect = { x, y, w, h };
+	SDL_RenderCopy(renderer, pTexture, nullptr, &dstRect);
+	SDL_DestroyTexture(pTexture);
+	SDL_FreeSurface(pSurface);
+}
 
 bool RenderWindow::loadBackground(const char* p_path)
 {
@@ -87,6 +118,22 @@ bool RenderWindow::loadMedia()
 {
 	//Loading success flag
 	bool success = true;
+
+	//Open the font
+	int fontSize = 28;
+	fontBig = TTF_OpenFont("assets/lazy.ttf", fontSize);
+	if (fontBig == NULL)
+	{
+		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
+		success = false;
+	}
+	fontSize = 12;
+	fontSmall = TTF_OpenFont("assets/lazy.ttf", fontSize);
+	if (fontSmall == NULL)
+	{
+		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
+		success = false;
+	}
 
 	//Load PNG texture
 	backgroundIMG = loadTexture("assets/background-blue.png");
@@ -150,6 +197,12 @@ void RenderWindow::display()
 	SDL_RenderPresent(renderer);
 	countedFrames++;
 }
+void RenderWindow::displayUI()
+{//not working
+	renderUI();
+	//Update screen
+	SDL_RenderPresent(renderer);
+}
 
 void RenderWindow::renderBackground()
 {
@@ -160,24 +213,23 @@ void RenderWindow::renderBackground()
 void RenderWindow::renderUI()
 {
 	//GridBox
-	int scale = 2; //screen multiplier
+	int scale = PIXEL_SCALE; //screen multiplier
 	SDL_Rect pos;
-	pos.x = pos.y = 0;
+	pos.x = pos.y = getRelGridStart();
 	pos.w = 160 * scale;
 	pos.h = 288 * scale;
 	SDL_RenderCopy(renderer, ui_IMG, NULL, &pos);
 
-	
 	//Calculate and correct fps
-	//float avgFPS = countedFrames / (gameCurrent->getTimePassed());
-	//if (avgFPS > 2000000)
-	//{
-	//	avgFPS = 0;
-	//}
-	//
-	//Render textures
+	double avgFPS = countedFrames / (gameCurrent->getTimePassed());
+	if (avgFPS > 2000000)
+	{
+		avgFPS = 0;
+	}
+	char tempText[17];
+	_gcvt_s(tempText, sizeof(tempText), *currFPS, 8);
+	drawText(tempText, screenW/2, 20, fontSmall, colWhite);
 }
-
 
 
 void RenderWindow::renderPieces()
@@ -186,15 +238,16 @@ void RenderWindow::renderPieces()
 	/*renderer gets generic position from piece 
 	translates it into screen coordinates
 	*/
-	pos.x = gameCurrent->testPiece.getRealPos().x;
-	pos.y = gameCurrent->testPiece.getRealPos().y;
+	pos.x = gameCurrent->testPiece.getRealPos().x + getRelGridStart();
+	pos.y = gameCurrent->testPiece.getRealPos().y + getRelGridStart();
 	pos.w = pos.h = gameCurrent->testPiece.getGridSize();
 	SDL_RenderCopy(renderer, texture, NULL, &pos);
 }
 
-void RenderWindow::setGame(Game* gameInstance)
+void RenderWindow::setGame(Game* gameInstance, double* p_fps)
 {
 	gameCurrent = gameInstance;
+	currFPS = p_fps;
 }
 
 bool RenderWindow::destroyTextures()
@@ -204,10 +257,13 @@ bool RenderWindow::destroyTextures()
 		SDL_FreeSurface(backgroundPNG);
 		backgroundPNG = NULL;
 	}
-
+	TTF_CloseFont(fontBig);
+	TTF_CloseFont(fontSmall);
 	SDL_DestroyTexture(texture);
 	SDL_DestroyTexture(backgroundIMG);
 	SDL_DestroyTexture(ui_IMG);
+	fontBig = NULL;
+	fontSmall = NULL;
 	texture = NULL;
 	backgroundIMG = NULL;
 	ui_IMG = NULL;
@@ -227,6 +283,7 @@ void RenderWindow::close()
 	renderer = NULL;
 
 	//Quit SDL subsystems
+	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
 }

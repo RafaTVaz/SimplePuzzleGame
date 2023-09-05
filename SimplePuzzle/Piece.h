@@ -27,12 +27,18 @@ class Piece
 {
 public:
 	Piece();
-	int random(int low, int high);
+
+	int id = 0;  //1-playPiece || 2-placedPiece
 	Position pos;
-	//Color color;
+
+	int random(int low, int high);
+
 	void bufferMove();
+	void bufferMove(int n);
+
 	int getGridSize();
 	Position getRealPos();
+	void clone(Piece clone);
 private:
 	int screenMultiplier;
 	int rel_to_ScreenGridSize;
