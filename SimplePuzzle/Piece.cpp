@@ -6,13 +6,13 @@ std::mt19937 gen(rd()); //random_engine
 
 Piece::Piece()
 {
+	id = random(0, 3);
 	pos = {}; //{1,1} - {8,16}
-	pos.x = random(1, 8);
-	pos.y = random(1, 16); //FIXME should always be top of grid
-	//color = { 100, 0, 0, 1 };
+	
 	screenMultiplier = 2;
 	rel_to_ScreenGridSize = GRID_SIZE * screenMultiplier; //if there is a screen size change this should change
 }
+
 
 int Piece::random(int low, int high)
 { //tested works
@@ -20,39 +20,40 @@ int Piece::random(int low, int high)
 	return dist(gen);
 }
 
-
+/**
+*	Because of Pixel art speed nedds to be locked to pixels and divisible by 16
+*	jumps need to be 2 by 2 NOT SURE 
+*
+*/
 void Piece::bufferMove()
-{
-	++pos.buffer;
-	if (pos.buffer >= 16)
+{//14 because 16 in already beginning of next position
+	pos.buffer+=2;
+	if (pos.buffer > 14)
 	{
 		pos.buffer = 0;
 		++pos.y;
 	}
 
-	if (pos.y == 16)
+	if (pos.y == 15)
 		pos.buffer = 0;
 }
 
 void Piece::bufferMove(int n)
 {
-	++pos.buffer;
-	if (pos.buffer >= 16)
+	pos.buffer += 2;
+	if (pos.buffer >= 15 - 2*n)
 	{
 		pos.buffer = 0;
 		++pos.y;
+		return;
 	}
 	--n;
 	if (n > 0)
 		bufferMove(n);
 
-	if (pos.y == 16)
+	if (pos.y == 15)
 		pos.buffer = 0;
 }
-
-
-
-
 
 int Piece::getGridSize()
 {
@@ -63,8 +64,8 @@ int Piece::getGridSize()
 Position Piece::getRealPos()
 {
 	Position realPos{
-		pos.x * getGridSize(),
-		pos.y * getGridSize() + pos.buffer * screenMultiplier
+		(pos.x+1) * getGridSize(),
+		(pos.y+1) * getGridSize() + pos.buffer * screenMultiplier
 	};
 	return realPos;
 }
@@ -73,4 +74,13 @@ void Piece::clone(Piece clone)
 {
 	id = clone.id;
 	pos = clone.pos;
+	connected = false;
+	//pos.buffer = 0;
+}
+
+void Piece::burst()
+{
+	id = -1;
+	connected = false;
+	countrFinal = 0;
 }

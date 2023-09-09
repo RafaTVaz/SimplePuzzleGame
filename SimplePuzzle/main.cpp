@@ -79,7 +79,12 @@ void calculateFPS(float& t_elapsed, Uint64 t_start, Uint64 t_end, int& t_counter
 void close()
 {
 	//Free resources and close SDL
-	gWindow->close();
+	//gWindow->close();
+
+	//delete gameLogic; //is deleted in gwindow
+	delete gWindow;
+	gameLogic = NULL;
+	gWindow = NULL;
 }
 
 

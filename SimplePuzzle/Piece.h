@@ -27,9 +27,12 @@ class Piece
 {
 public:
 	Piece();
+	//~Piece();
 
-	int id = 0;  //1-playPiece || 2-placedPiece
+	int id = 0;  //4 different pieces {0-3} not active = -1
 	Position pos;
+	bool connected = false;
+	int countrFinal = 0;	//counter time before piece is set
 
 	int random(int low, int high);
 
@@ -38,6 +41,8 @@ public:
 
 	int getGridSize();
 	Position getRealPos();
+	//void reset();
+	void burst();
 	void clone(Piece clone);
 private:
 	int screenMultiplier;

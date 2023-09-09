@@ -57,6 +57,29 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 	}
 }
 
+RenderWindow::~RenderWindow()
+{
+	//destroy game 
+	delete gameCurrent;
+	gameCurrent = NULL;
+
+	//Destroy all loaded images, text, sprites
+	destroyTextures();
+
+	//Destroy window
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	window = NULL;
+	renderer = NULL;
+
+
+	//Quit SDL subsystems
+	TTF_Quit();
+	IMG_Quit();
+	SDL_Quit();
+}
+
+
 void RenderWindow::drawText(const char* text, int x, int y) 
 {
 	SDL_assert(text);
@@ -70,6 +93,7 @@ void RenderWindow::drawText(const char* text, int x, int y)
 	SDL_DestroyTexture(pTexture);
 	SDL_FreeSurface(pSurface);
 }
+
 void RenderWindow::drawText(const char* text, int x, int y, TTF_Font* font, SDL_Color color)
 {
 	SDL_assert(text);
@@ -148,15 +172,20 @@ bool RenderWindow::loadMedia()
 		printf("Failed to load texture UI image!\n");
 		success = false;
 	}
-	texture = loadTexture("assets/sprite-1.png");
+	/*texture = loadSpriteSheet("assets/Sprites-Page.png");
 	if (texture == NULL)
+	{
+		printf("Failed to load texture sprite!\n");
+		success = false;
+	}*/
+	spriteSheet = loadSpriteSheet("assets/PuyoPuyo-Sprites.png");
+	if (spriteSheet == NULL)
 	{
 		printf("Failed to load texture sprite!\n");
 		success = false;
 	}
 	return success;
 }
-
 
 SDL_Texture* RenderWindow::loadTexture(const char* p_path)
 {
@@ -185,6 +214,81 @@ SDL_Texture* RenderWindow::loadTexture(const char* p_path)
 	return newTexture;
 }
 
+/**
+* Creates spriteClips acording to the spriteSheet png
+* 
+* has to be redone manually every time because sprite sheets
+* don't follow specific rules, if a new sprite is added,
+* changing the PNG dims, this needs to be rewritten
+* 
+* Blocks of sprites representing each piece type (color)
+* this PNG has space for 84 sprites
+* 	// [ 1 | 3 ]
+*	// [ 2 | 4 ]
+* 
+* @return loadTexture(path to spriteSheet)
+*/
+SDL_Texture* RenderWindow::loadSpriteSheet(const char* p_path)
+{
+	int i, j;
+	int clipWidth = GRID_SIZE;
+	int clipHeight = GRID_SIZE;
+
+	int texgridW = 14; //number of sprites in x dir
+	int texgridH = 6;  //number of sprites in y dir
+
+	// Initialize spriteClips
+	for ( i = 0; i < NUM_PIECES; i++) {
+		for ( j = 0; j < NUM_SPRITES; j++) {
+			spriteClips[i][j].w = clipWidth;           // Set the width
+			spriteClips[i][j].h = clipHeight;          // Set the height
+		}
+	}
+
+
+	// [ o |   ]
+	// [   |   ]
+	i = 0;
+	for ( j = 0; j < NUM_SPRITES; j++) {
+		/**spriteSheetPos.x = [ border ] + [   column   ] **/
+		spriteClips[i][j].x = 1*(j/3 +1) + j/3 * clipWidth;
+		/**spriteSheetPos.y = [ border ] + [    line    ]**/
+		spriteClips[i][j].y = 1*(j%3 +1) + j%3 * clipHeight;
+	}
+
+	// [   |   ]
+	// [ o |   ]
+	i = 1;
+	for (j = 0; j < NUM_SPRITES; j++) {
+		/**spriteSheetPos.x = [ border ] + [   column   ] **/
+		spriteClips[i][j].x = 1 * (j / 3 + 1) + j / 3 * clipWidth;
+		/**spriteSheetPos.y = [ border ] + [    line    ]**/
+		spriteClips[i][j].y = 1 * (j % 3 + 1) + j % 3 * clipHeight + (texgridH/2 * (1 + clipHeight));
+	}
+
+	// [   | o ]
+	// [   |   ]
+	i = 2;
+	for (j = 0; j < NUM_SPRITES; j++) {
+		/**spriteSheetPos.x = [ border ] + [   column   ] **/
+		spriteClips[i][j].x = 1 * (j / 3 + 1) + j / 3 * clipWidth  + 1*(texgridW/2 * (1 + clipWidth));
+		/**spriteSheetPos.y = [ border ] + [    line    ]**/
+		spriteClips[i][j].y = 1 * (j % 3 + 1) + j % 3 * clipHeight;
+	}
+
+	// [   |   ]
+	// [   | o ]
+	i = 3;
+	for (j = 0; j < NUM_SPRITES; j++) {
+		/**spriteSheetPos.x = [ border ] + [   column   ] **/
+		spriteClips[i][j].x = 1 * (j / 3 + 1) + j / 3 * clipWidth  + (texgridW/2 * (1 + clipWidth));
+		/**spriteSheetPos.y = [ border ] + [    line    ]**/
+		spriteClips[i][j].y = 1 * (j % 3 + 1) + j % 3 * clipHeight + (texgridH/2 * (1 + clipHeight));
+	}
+
+	return loadTexture(p_path);
+}
+
 void RenderWindow::display()
 {
 	//Clear screen
@@ -197,6 +301,7 @@ void RenderWindow::display()
 	SDL_RenderPresent(renderer);
 	countedFrames++;
 }
+
 void RenderWindow::displayUI()
 {//not working
 	renderUI();
@@ -231,17 +336,71 @@ void RenderWindow::renderUI()
 	drawText(tempText, screenW/2, 20, fontSmall, colWhite);
 }
 
+/**
+*	Renderer gets generic position from piece
+*	translates it into screen coordinates
+*	@returns rectangle where Sprite will be drawn on screen
+*/
+SDL_Rect RenderWindow::updateRectPos(Piece tempPiece, int t_mapStart, int t_pixels)
+{
+	SDL_Rect newRect;
+	newRect.x = tempPiece.getRealPos().x + t_mapStart;
+	newRect.y = tempPiece.getRealPos().y + t_mapStart;
+	newRect.w = newRect.h = t_pixels;
+	return newRect;
+}
 
 void RenderWindow::renderPieces()
 {
 	SDL_Rect pos;
-	/*renderer gets generic position from piece 
-	translates it into screen coordinates
+
+	int id = 0;
+	int spriteSize = gameCurrent->testPiece.getGridSize(); //16x16
+	int mapStart = getRelGridStart(); //pixel where the playable area starts
+
+	
+
+	/************Render Player Pieces**************/
+	/**
+	* animSprite:
+	*	 0 - normal
+	*	 1 - highligh normal
+	*	 3 - squish
+	*	 4 - white
+	*	 6 - long (falling)
+	*	 7 - wide eye
+	* 
+	*	SDL_RenderCopy(renderer, spriteSheet, &spriteClips[id][animSprite], &pos);
 	*/
-	pos.x = gameCurrent->testPiece.getRealPos().x + getRelGridStart();
-	pos.y = gameCurrent->testPiece.getRealPos().y + getRelGridStart();
-	pos.w = pos.h = gameCurrent->testPiece.getGridSize();
-	SDL_RenderCopy(renderer, texture, NULL, &pos);
+	int animSprite = 1;
+	//has to be animation depepndante not buffer
+	// animSprite = gameCurrent->testPiece.pos.buffer % 3 * 3; //changes between 0 and 3 
+
+	if (gameCurrent->getCurrentPlayState() == FINAL_MOVE)
+		animSprite = 4;
+	if (gameCurrent->getCurrentPlayState() == PLAY || gameCurrent->getCurrentPlayState() == FINAL_MOVE)
+	{
+		pos = updateRectPos(gameCurrent->testPiece, mapStart, spriteSize);
+		SDL_RenderCopy(renderer, spriteSheet, &spriteClips[gameCurrent->testPiece.id][animSprite], &pos);
+
+		pos = updateRectPos(gameCurrent->testPiece.otherPiece, mapStart, spriteSize);
+		SDL_RenderCopy(renderer, spriteSheet, &spriteClips[gameCurrent->testPiece.otherPiece.id][0], &pos);
+	}
+
+
+	/************Render Board Pieces***************/
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 16; j++) {
+			id = gameCurrent->pieceMatrix[i][j].id;
+			if (id >= 0)
+			{
+				//animSprite depends on state of piece, connected or not etc
+				animSprite = 3;
+				pos = updateRectPos(gameCurrent->pieceMatrix[i][j], mapStart, spriteSize);
+				SDL_RenderCopy(renderer, spriteSheet, &spriteClips[id][animSprite], &pos);
+			}
+		}
+	}
 }
 
 void RenderWindow::setGame(Game* gameInstance, double* p_fps)
@@ -259,33 +418,16 @@ bool RenderWindow::destroyTextures()
 	}
 	TTF_CloseFont(fontBig);
 	TTF_CloseFont(fontSmall);
-	SDL_DestroyTexture(texture);
+	SDL_DestroyTexture(spriteSheet);
 	SDL_DestroyTexture(backgroundIMG);
 	SDL_DestroyTexture(ui_IMG);
 	fontBig = NULL;
 	fontSmall = NULL;
-	texture = NULL;
+	spriteSheet = NULL;
 	backgroundIMG = NULL;
 	ui_IMG = NULL;
 
 	return true;
-}
-
-void RenderWindow::close()
-{
-	//Destroy all loaded images, text, sprites
-	destroyTextures();
-
-	//Destroy window
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	window = NULL;
-	renderer = NULL;
-
-	//Quit SDL subsystems
-	TTF_Quit();
-	IMG_Quit();
-	SDL_Quit();
 }
 
 

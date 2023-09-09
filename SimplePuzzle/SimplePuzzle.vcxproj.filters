@@ -30,6 +30,9 @@
     <ClCompile Include="Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerPiece.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\background.png">
@@ -44,6 +47,12 @@
     <Image Include="assets\background-blue.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="assets\Sprites-Page.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\PuyoPuyo-Sprites.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderWindow.h">
@@ -56,6 +65,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerPiece.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
