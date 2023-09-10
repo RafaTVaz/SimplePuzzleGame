@@ -100,8 +100,6 @@ void Game::run()
 
 		checkKeyPress();
 
-
-		//while (t_accumul > t_slice) 60fps
 		if (gameInput.pressed)
 		{
 			updatePlayerInput();
@@ -146,6 +144,7 @@ void Game::updatePlayerInput()
 			{
 				testPiece.pos.x--;
 				testPiece.otherPiece.pos.x--;
+				testPiece.animPos.animType = animTiming.move_left;
 
 				if (currPlayState == playState.finalMove
 					&& !isMoveFinal())
@@ -169,6 +168,7 @@ void Game::updatePlayerInput()
 			{
 				testPiece.pos.x++;
 				testPiece.otherPiece.pos.x++;
+				testPiece.animPos.animType = animTiming.move_right;
 
 				if (currPlayState == playState.finalMove
 					&& !isMoveFinal())
@@ -322,7 +322,10 @@ void Game::updateGame()
 			Position temp = testPiece.pos;
 			++temp.y;
 			if (isMovePossible(temp))
+			{
+				testPiece.animPos.animType = animTiming.buffer;
 				testPiece.bufferMove();
+			}
 
 			animTiming.elapsedTime = 0;
 		}
@@ -354,11 +357,11 @@ void Game::updateGame()
 	case playState.bursting:
 
 		burstEnd = true;
-		burst = false;
 
 
 		if (searchCluster()) {
 			burstEnd = false;
+			addBurstPoints();
 			destroyConnected();
 			currPlayState = playState.waiting;
 		}
@@ -371,8 +374,10 @@ void Game::updateGame()
 			//calculate all points and update
 			//std::fill(linesBursted, linesBursted + 7, 0);
 			//printf("BURSTEND\n");
-			currPlayState = playState.playing;
 			testPiece.reset();
+			addToScore();
+
+			currPlayState = playState.playing;
 			animTiming.elapsedTime = 0;
 		}
 		break;
@@ -431,6 +436,7 @@ void Game::updateRealPositions()
 		testPiece.animPos.lastTime = currTime;
 		testPiece.animPos.elapsedTime += deltaTime;
 
+/****Rotation***********************/
 		if (testPiece.animPos.animType == 0)//rotation worked normally
 		{//Rotate 90º clockwise, no point in rotating anticlockwise, game does not become more fun, just more buttons
 			int* counter = &testPiece.animPos.ctr;
@@ -477,7 +483,7 @@ void Game::updateRealPositions()
 				*counter = 0;
 			}
 		}
-		else if(testPiece.animPos.animType > 0) //obstruction in roation
+		else if(testPiece.animPos.animType > 0 && testPiece.animPos.animType < 5) //obstruction in roation
 		{
 			int* counter = &testPiece.animPos.ctr;
 			double maxCounter = 3; //  animations need to be int when   60/frames -> 60/4=15ms
@@ -606,7 +612,104 @@ void Game::updateRealPositions()
 					*counter = 0;
 				}
 			}
+		}
+/****Buffer Move***********************/
+		else if(testPiece.animPos.animType == animTiming.buffer) //buffer Move
+		{
+			int* counter = &testPiece.animPos.ctr;
+			double maxCounter = testPiece.jumpStep/2;
+			int x, y;
+			if (testPiece.animPos.elapsedTime >= 1000.f / 60)
+			{
+				//shift = 7/8 | 6/8 | 5/8 | 4/8 etc per tick
+				int shift = (maxCounter - (*counter * 2))  * testPiece.screenMultiplier;
+				//testPiece
+				x = (testPiece.pos.x + 1) * testPiece.getGridSize();
+				y = (testPiece.pos.y + 1) * testPiece.getGridSize() - shift + testPiece.getRealBuffer();
 
+				Position realPos{ x,y };
+				testPiece.realPositions[0] = realPos;
+
+				//otherPiece
+				x = (testPiece.otherPiece.pos.x + 1) * testPiece.getGridSize();
+				y = (testPiece.otherPiece.pos.y + 1) * testPiece.getGridSize() - shift + testPiece.getRealBuffer();
+
+				Position realOtherPos{ x,y };
+				testPiece.realPositions[1] = realOtherPos;
+
+				*counter = *counter + 1;
+				testPiece.animPos.elapsedTime = 0;
+			}
+			if (*counter >= maxCounter/2)
+			{
+				testPiece.animPos.animType = -1;
+				*counter = 0;
+			}
+		}
+/****Left/Right Move***********************/
+		else if (testPiece.animPos.animType == animTiming.move_right) //buffer Move
+		{
+			int* counter = &testPiece.animPos.ctr;
+			double maxCounter = testPiece.jumpStep / 2;
+			int x, y;
+			if (testPiece.animPos.elapsedTime >= 1000.f / 60)
+			{
+				//shift = 7/8 | 6/8 | 5/8 | 4/8 etc per tick
+				int shift = (maxCounter - (*counter * 2)) * testPiece.screenMultiplier;
+				//testPiece
+				x = (testPiece.pos.x + 1) * testPiece.getGridSize() - shift;
+				y = (testPiece.pos.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
+
+				Position realPos{ x,y };
+				testPiece.realPositions[0] = realPos;
+
+				//otherPiece
+				x = (testPiece.otherPiece.pos.x + 1) * testPiece.getGridSize() - shift;
+				y = (testPiece.otherPiece.pos.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
+
+				Position realOtherPos{ x,y };
+				testPiece.realPositions[1] = realOtherPos;
+
+				*counter = *counter + 1;
+				testPiece.animPos.elapsedTime = 0;
+			}
+			if (*counter >= maxCounter / 2)
+			{
+				testPiece.animPos.animType = -1;
+				*counter = 0;
+			}
+		}
+		else if (testPiece.animPos.animType == animTiming.move_left) //buffer Move
+		{
+			int* counter = &testPiece.animPos.ctr;
+			double maxCounter = testPiece.jumpStep / 2;
+			int x, y;
+			if (testPiece.animPos.elapsedTime >= 1000.f / 60)
+			{
+				//shift = 7/8 | 6/8 | 5/8 | 4/8 etc per tick
+				int shift = (maxCounter - (*counter * 2)) * testPiece.screenMultiplier;
+				//testPiece
+				x = (testPiece.pos.x + 1) * testPiece.getGridSize() + shift;
+				y = (testPiece.pos.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
+
+				Position realPos{ x,y };
+				testPiece.realPositions[0] = realPos;
+
+				//otherPiece
+				x = (testPiece.otherPiece.pos.x + 1) * testPiece.getGridSize() + shift;
+				y = (testPiece.otherPiece.pos.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
+
+				Position realOtherPos{ x,y };
+				testPiece.realPositions[1] = realOtherPos;
+
+				*counter = *counter + 1;
+				testPiece.animPos.elapsedTime = 0;
+			}
+			if (*counter >= maxCounter / 2)
+			{
+				testPiece.animPos.animType = -1;
+				*counter = 0;
+			}
 		}
 	}
 }
@@ -714,6 +817,36 @@ int Game::findGroupSize(int x, int y)
 	return n;
 }
 
+/**
+*	Burst:	4 pieces is 100, 5 = 200, 6 = 300 etc.
+* 
+*	if second burst in one move
+*			4 pieces is 200, 5 = 400, 6 = 600 etc.
+*/
+void Game::addToScore()
+{
+	score.burstCount = 0;
+	score.currScore += score.currBurstPoints;
+
+
+	printf("Burst Points:  %d\n", score.currBurstPoints);
+	printf("Current Score: %d\n\n", score.currScore);
+
+	score.currBurstPoints = 0;
+
+	if (score.currScore > score.highscore)
+	{
+		score.highscore = score.currScore;
+		printf("		!!NEW HIGH SCORE!!\n");
+	}
+}
+
+void Game::addBurstPoints()
+{
+	score.burstCount++;
+	score.currBurstPoints += (connectedPieces.size() - 3) * 100 * score.burstCount;
+}
+
 void Game::destroyConnected()
 {
 	printf("DESTROY CONNECTED\n");
@@ -725,8 +858,6 @@ void Game::destroyConnected()
 	}
 
 	connectedPieces.clear();
-	
-	
 }
 
 //returns timer in seconds

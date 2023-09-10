@@ -52,7 +52,7 @@ struct GameState
 
 struct Animation 
 {
-	static const int fps_falling = 6; //probs 6; changes with difficulty
+	static const int fps_falling = 1; //probs 6; changes with difficulty
 	static const int fps_spriteAnim = 2;
 	static const int fps_finalDecision = 3; 
 
@@ -61,12 +61,20 @@ struct Animation
 	static const int right_down = 2;
 	static const int down_left = 3;
 	static const int left_up = 4;
+	static const int buffer = 5;
+	static const int move_left = 6;
+	static const int move_right = 7;
 
 	double elapsedTime = 0;
 	double lastTime = 0;
 };
 
-
+struct Score {
+	int highscore = 0;
+	int currBurstPoints = 0;
+	int currScore = 0;
+	int burstCount = 0;
+};
 
 class Game
 {
@@ -89,6 +97,8 @@ private:
 	bool searchCluster();
 	void resetConnected();
 	int	 findGroupSize(int x, int y);
+	void addBurstPoints();
+	void addToScore();
 	void destroyConnected();
 	void updateGame(); //every X seconds
 	//void updatePlay(Piece* test); //Player input happened
@@ -107,6 +117,7 @@ private:
 	GameInput gameInput{};
 	Animation animTiming;
 	GameState playState;
+	Score score;
 
 	std::vector<Piece> connectedPieces;
 

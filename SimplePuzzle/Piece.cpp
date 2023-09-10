@@ -27,8 +27,8 @@ int Piece::random(int low, int high)
 */
 void Piece::bufferMove()
 {//14 because 16 in already beginning of next position
-	pos.buffer+=2;
-	if (pos.buffer > 14)
+	pos.buffer+= jumpStep;
+	if (pos.buffer > 16 - jumpStep)
 	{
 		pos.buffer = 0;
 		++pos.y;
@@ -40,8 +40,9 @@ void Piece::bufferMove()
 
 void Piece::bufferMove(int n)
 {
-	pos.buffer += 2;
-	if (pos.buffer >= 15 - 2*n)
+	int step = 4;
+	pos.buffer += jumpStep;
+	if (pos.buffer > (16- jumpStep) - 2*n)
 	{
 		pos.buffer = 0;
 		++pos.y;

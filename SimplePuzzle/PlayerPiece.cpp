@@ -28,8 +28,8 @@ void PlayerPiece::bufferMove()
 {//14 because 16 in already beginning of next position
 	otherPiece.bufferMove();
 
-	pos.buffer += 2;
-	if (pos.buffer > 14)
+	pos.buffer += jumpStep;
+	if (pos.buffer > 16 - jumpStep)
 	{
 		pos.buffer = 0;
 		++pos.y;
@@ -37,14 +37,13 @@ void PlayerPiece::bufferMove()
 
 	if (pos.y == 15)
 		pos.buffer = 0;
-
-	
 }
 
 void PlayerPiece::bufferMove(int n)
 {
-	pos.buffer += 2;
-	if (pos.buffer >= 15 - 2 * n)
+	//otherPiece.bufferMove(n);
+	pos.buffer += jumpStep;
+	if (pos.buffer > (16 - jumpStep) - 2 * n)
 	{
 		pos.buffer = 0;
 		++pos.y;

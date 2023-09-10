@@ -45,6 +45,7 @@ public:
 	Position pos;
 	bool connected = false;
 	int countrFinal = 0;	//counter time before piece is set
+	int jumpStep = 8;
 
 	int random(int low, int high);
 
