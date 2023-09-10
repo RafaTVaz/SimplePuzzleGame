@@ -138,6 +138,8 @@ bool RenderWindow::loadBackground(const char* p_path)
 	return true;
 }
 
+
+
 bool RenderWindow::loadMedia()
 {
 	//Loading success flag
@@ -350,43 +352,36 @@ SDL_Rect RenderWindow::updateRectPos(Piece tempPiece, int t_mapStart, int t_pixe
 	return newRect;
 }
 
+std::array<SDL_Rect, 2> RenderWindow::updatePlayerRectPos(int t_mapStart, int t_pixels)
+{
+	std::array<SDL_Rect, 2> newRect;
+	//Player Piece
+	newRect[0].x = gameCurrent->testPiece.getRealPos().x + t_mapStart;
+	newRect[0].y = gameCurrent->testPiece.getRealPos().y + t_mapStart;
+	newRect[0].w = newRect[0].h = t_pixels;
+
+	//Other Piece
+	newRect[1].x = gameCurrent->testPiece.getOtherRealPos().x + t_mapStart;
+	newRect[1].y = gameCurrent->testPiece.getOtherRealPos().y + t_mapStart;
+	newRect[1].w = newRect[1].h = t_pixels;
+
+	return newRect;
+}
+
 void RenderWindow::renderPieces()
 {
 	SDL_Rect pos;
 
 	int id = 0;
-	int spriteSize = gameCurrent->testPiece.getGridSize(); //16x16
-	int mapStart = getRelGridStart(); //pixel where the playable area starts
+	int animSprite = 1;
+	spriteSize = gameCurrent->testPiece.getGridSize(); //16x16
+	mapStart = getRelGridStart(); //pixel where the playable area starts
 
 	
 
 	/************Render Player Pieces**************/
-	/**
-	* animSprite:
-	*	 0 - normal
-	*	 1 - highligh normal
-	*	 3 - squish
-	*	 4 - white
-	*	 6 - long (falling)
-	*	 7 - wide eye
-	* 
-	*	SDL_RenderCopy(renderer, spriteSheet, &spriteClips[id][animSprite], &pos);
-	*/
-	int animSprite = 1;
-	//has to be animation depepndante not buffer
-	// animSprite = gameCurrent->testPiece.pos.buffer % 3 * 3; //changes between 0 and 3 
 
-	if (gameCurrent->getCurrentPlayState() == FINAL_MOVE)
-		animSprite = 4;
-	if (gameCurrent->getCurrentPlayState() == PLAY || gameCurrent->getCurrentPlayState() == FINAL_MOVE)
-	{
-		pos = updateRectPos(gameCurrent->testPiece, mapStart, spriteSize);
-		SDL_RenderCopy(renderer, spriteSheet, &spriteClips[gameCurrent->testPiece.id][animSprite], &pos);
-
-		pos = updateRectPos(gameCurrent->testPiece.otherPiece, mapStart, spriteSize);
-		SDL_RenderCopy(renderer, spriteSheet, &spriteClips[gameCurrent->testPiece.otherPiece.id][0], &pos);
-	}
-
+	renderPlayPieces();
 
 	/************Render Board Pieces***************/
 	for (int i = 0; i < 8; i++) {
@@ -401,6 +396,39 @@ void RenderWindow::renderPieces()
 			}
 		}
 	}
+}
+
+void RenderWindow::renderPlayPieces()
+{
+	std::array<SDL_Rect, 2> playerPos;
+	SDL_Rect otherPos;
+	int animSprite = 1;
+	/**
+	* animSprite:
+	*	 0 - normal
+	*	 1 - highligh normal
+	*	 3 - squish
+	*	 4 - white
+	*	 6 - long (falling)
+	*	 7 - wide eye
+	*
+	*	SDL_RenderCopy(renderer, spriteSheet, &spriteClips[id][animSprite], &pos);
+	*/
+	//has to be animation depepndante not buffer
+	// animSprite = gameCurrent->testPiece.pos.buffer % 3 * 3; //changes between 0 and 3 
+
+	if (gameCurrent->getCurrentPlayState() == FINAL_MOVE)
+		animSprite = 4;
+	if (gameCurrent->getCurrentPlayState() == PLAY || gameCurrent->getCurrentPlayState() == FINAL_MOVE)
+	{
+		playerPos = updatePlayerRectPos( mapStart, spriteSize);
+		SDL_RenderCopy(renderer, spriteSheet, &spriteClips[gameCurrent->testPiece.id][animSprite], &playerPos[0]);
+
+		otherPos = updateRectPos(gameCurrent->testPiece.otherPiece, mapStart, spriteSize);
+		SDL_RenderCopy(renderer, spriteSheet, &spriteClips[gameCurrent->testPiece.otherPiece.id][0], &playerPos[1]);
+	}
+
+
 }
 
 void RenderWindow::setGame(Game* gameInstance, double* p_fps)

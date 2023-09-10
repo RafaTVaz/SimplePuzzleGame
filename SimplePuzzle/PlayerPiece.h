@@ -2,6 +2,8 @@
 
 #include "Piece.h"
 
+
+
 class PlayerPiece : public Piece
 {
 public:
@@ -10,8 +12,14 @@ public:
 	void reset();
 	void bufferMove();
 	void bufferMove(int n);
-	Piece otherPiece;
+	Position getRealPos();
+	Position getOtherRealPos();
+	void initAnimPos();
+	void setNewAnimPos();
+	void setNewAnimPos(int type);
 
+	Piece otherPiece;
+	Position realPositions[2];
 private:
 };
 

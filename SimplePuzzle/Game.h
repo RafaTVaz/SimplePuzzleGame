@@ -56,6 +56,12 @@ struct Animation
 	static const int fps_spriteAnim = 2;
 	static const int fps_finalDecision = 3; 
 
+	static const int line = 0;
+	static const int up_right = 1;
+	static const int right_down = 2;
+	static const int down_left = 3;
+	static const int left_up = 4;
+
 	double elapsedTime = 0;
 	double lastTime = 0;
 };
@@ -86,7 +92,9 @@ private:
 	void destroyConnected();
 	void updateGame(); //every X seconds
 	//void updatePlay(Piece* test); //Player input happened
-	void updatePlay(); //Player input happened
+	void updatePlayerInput(); //Player input happened
+
+	void updateRealPositions();
 	bool isMovePossible(Position newPos);
 	bool isSideMovePossible(Position newPos);
 	bool isDownMovePossible(Position newPos);

@@ -4,6 +4,8 @@
 #include <SDL_ttf.h>
 #include <stdio.h>
 #include <string>
+#include <array>
+
 
 #include "Game.h"
 
@@ -33,11 +35,15 @@ private:
 		return GRID_START * PIXEL_SCALE * gameCurrent->testPiece.getGridSize();
 	};
 	SDL_Rect updateRectPos(Piece tempPiece, int t_mapStart, int t_pixels);
+	std::array<SDL_Rect, 2> updatePlayerRectPos(int t_mapStart, int t_pixels);
 	void drawText(const char* text, int x, int y);
 	void drawText(const char* text, int x, int y, TTF_Font* font, SDL_Color color);
 	bool loadBackground(const char* p_location);
+	void renderPlayPieces();
 	bool destroyTextures();
 
+	int spriteSize = 0; //16x16
+	int mapStart = 0;
 	int screenW, screenH;
 	double* currFPS = 0;
 	int countedFrames = 0;

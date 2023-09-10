@@ -7,7 +7,7 @@ void PlayerPiece::reset()
 	pos = {}; //{1,1} - {8,16}
 	pos.x = random(1, 6);
 	pos.y = 0;//random(1, 16); //FIXME should always be top of grid
-	connected = false;
+	connected = true;
 	countrFinal = 0;
 
 
@@ -55,7 +55,43 @@ void PlayerPiece::bufferMove(int n)
 		bufferMove(n);
 
 	if (pos.y == 15)
-	{
 		pos.buffer = 0;
+}
+
+Position PlayerPiece::getRealPos()
+{
+	if (animPos.animType > 0)
+	{
+		return realPositions[0];
 	}
+	Position realPos = Piece::getRealPos();
+	return realPos;
+}
+Position PlayerPiece::getOtherRealPos()
+{
+
+	if (animPos.animType >= 0)
+	{
+		return realPositions[1];
+	}
+	return otherPiece.getRealPos();
+
+}
+
+
+void PlayerPiece::initAnimPos()
+{
+	animPos.animType = -1;
+	animPos.ctr = 0;
+}
+
+void PlayerPiece::setNewAnimPos()
+{
+	animPos.animType = 0;
+	animPos.ctr = 0;
+}
+void PlayerPiece::setNewAnimPos(int type)
+{
+	animPos.animType = type;
+	animPos.ctr = 0;
 }

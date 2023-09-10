@@ -61,14 +61,20 @@ int Piece::getGridSize()
 	return rel_to_ScreenGridSize;
 }
 
+int Piece::getRealBuffer()
+{
+	return pos.buffer * screenMultiplier;
+}
+
 Position Piece::getRealPos()
 {
 	Position realPos{
 		(pos.x+1) * getGridSize(),
-		(pos.y+1) * getGridSize() + pos.buffer * screenMultiplier
+		(pos.y+1) * getGridSize() + getRealBuffer()
 	};
 	return realPos;
 }
+
 
 void Piece::clone(Piece clone) 
 {
@@ -77,6 +83,8 @@ void Piece::clone(Piece clone)
 	connected = false;
 	//pos.buffer = 0;
 }
+
+
 
 void Piece::burst()
 {

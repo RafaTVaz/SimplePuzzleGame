@@ -104,20 +104,16 @@ void Game::run()
 		//while (t_accumul > t_slice) 60fps
 		if (gameInput.pressed)
 		{
-			updatePlay();
+			updatePlayerInput();
 			//printf("%d\n", testPiece.pos.buffer);
 		}
 	}
 	updateGame();
-	if (currPlayState == playState.bursting)
-	{
-		//updateGameMatrix(); //explode 4+ connects
-		//updateScore();
-		//testPiece.reset();
-	}
+	updateRealPositions();
+	
 }
 
-void Game::updatePlay()
+void Game::updatePlayerInput()
 {
 	if (gameInput.pause)
 	{
@@ -133,7 +129,8 @@ void Game::updatePlay()
 	}
 
 	// move Piece is not paused and playable
-	if (!timer.isPaused() && (currPlayState == playState.playing || currPlayState == playState.finalMove))
+	if (!timer.isPaused() 
+		&& (currPlayState == playState.playing || currPlayState == playState.finalMove))
 	{
 		if (gameInput.moveLeft)
 		{
@@ -187,11 +184,6 @@ void Game::updatePlay()
 			int y2 = testMaxFall(testPiece.otherPiece.pos);
 			int dropY = (y1 < y2) ? y1 : y2;
 
-
-
-
-
-
 			dropY--;
 			testPiece.pos.y += dropY;
 			testPiece.otherPiece.pos.y += dropY;
@@ -216,75 +208,91 @@ void Game::updatePlay()
 		}
 		else if (gameInput.rotateClockwise)
 		{
+			int type = -1;
 			Position pPivot = testPiece.pos;
 			Position pRotate = testPiece.otherPiece.pos;
 			Position pTest;
+			testPiece.initAnimPos();
+
 
 			//Above, move to Right 
 			if (pPivot.y > pRotate.y)
 			{
+				type = animTiming.up_right;
 				pTest = pPivot;
 				pPivot.x++;
 				pTest.x--;
 				if (isSideMovePossible(pPivot))
 				{
 					testPiece.otherPiece.pos = pPivot;
+					testPiece.setNewAnimPos(); 
 				}
 				else if(isSideMovePossible(pTest))
 				{
 					testPiece.otherPiece.pos = testPiece.pos;
 					testPiece.pos.x--;
+					testPiece.setNewAnimPos(type);
 				}
 			}
 			//Right, move to Below 
 			else if (pPivot.x < pRotate.x)
 			{
+				type = animTiming.right_down;
 				pPivot.y++;
-				if (isMovePossible(pPivot) && !isMoveFinal(pPivot))
+				pTest = pPivot;
+				pTest.y++;
+				if (isMovePossible(pPivot) && !isDownMovePossible(pPivot))
 				{
 					testPiece.otherPiece.pos = pPivot;
+					testPiece.setNewAnimPos(); 
 				}
 				else
 				{
 					testPiece.otherPiece.pos = testPiece.pos;
 					testPiece.pos.y--;
+					testPiece.setNewAnimPos(type);
 				}
 			}
 			//Below, move to Left 
 			else if (pPivot.y < pRotate.y)
 			{
+				type = animTiming.down_left;
 				pTest = pPivot;
 				pPivot.x--;
 				pTest.x++;
 				if (isSideMovePossible(pPivot))
 				{
 					testPiece.otherPiece.pos = pPivot;
+					testPiece.setNewAnimPos(); 
+
 				}
 				else if(isSideMovePossible(pTest))
 				{
 					testPiece.otherPiece.pos = testPiece.pos;
 					testPiece.pos.x++;
+					testPiece.setNewAnimPos(type);
 				}
 			}
 			//Left, move to Above 
 			else if (pPivot.x > pRotate.x)
 			{
-
+				type = animTiming.left_up;
 				pPivot.y--;
 				if(isMovePossible(pPivot))
 				{
 					testPiece.otherPiece.pos = pPivot;
+					testPiece.setNewAnimPos(); 
 				}
 				else
 				{
 					testPiece.otherPiece.pos = testPiece.pos;
 					testPiece.pos.y++;
+					testPiece.setNewAnimPos(type);
 				}
 			}
 		}
 	}
 }
-
 
 
 void Game::updateGame()
@@ -325,6 +333,7 @@ void Game::updateGame()
 		//FINAL DECISION TIME BEFORE PIECE BEING PLACED
 		if (animTiming.elapsedTime > 1000.f / animTiming.fps_finalDecision)
 		{
+			testPiece.connected = false;
 			currPlayState = playState.waiting;
 			//prepare matrix for burst check
 			for (int i = 0; i < 8; i++) {
@@ -381,7 +390,7 @@ void Game::updateGame()
 					temp = pieceMatrix[i][j - 1].pos;
 					falling = true;
 					//BUFFER MOVE
-					if (animTiming.elapsedTime >= 1000.f / 30)//animTiming.elapsedTime >= 1000.f / animTiming.fps_falling)
+					if (animTiming.elapsedTime >= 1000.f / 60)//animTiming.elapsedTime >= 1000.f / animTiming.fps_falling)
 					{
 						animated = true;
 						++temp.y;
@@ -408,6 +417,197 @@ void Game::updateGame()
 		
 
 		break;
+	}
+}
+
+void Game::updateRealPositions()
+{
+	if(testPiece.animPos.animType >= 0)
+	{
+	/*****************Animation Timers***********************/
+		Uint32 currTime = timer.getTicks();
+		Uint32 deltaTime = currTime - testPiece.animPos.lastTime;
+
+		testPiece.animPos.lastTime = currTime;
+		testPiece.animPos.elapsedTime += deltaTime;
+
+		if (testPiece.animPos.animType == 0)//rotation worked normally
+		{//Rotate 90º clockwise, no point in rotating anticlockwise, game does not become more fun, just more buttons
+			int* counter = &testPiece.animPos.ctr;
+			double maxCounter = testPiece.animPos.max;
+
+			/*****************Animation Calculation***********************/
+			if (testPiece.animPos.elapsedTime >= 1000.f / 60)
+			{
+				int otherX, otherY, pivotX, pivotY;
+				int radius = 16; //16*2
+				double angle, angRad;
+
+				angle = -90.f + (90 / maxCounter) * (*counter);
+				angRad = M_PI * (angle / 180);
+
+				Position pivot, rotPoint;
+				pivot = testPiece.pos;
+				rotPoint = testPiece.otherPiece.pos;
+
+				//Real on screen position
+				pivotX = (pivot.x + 1) * testPiece.getGridSize();
+				pivotY = (pivot.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
+
+				otherX = (rotPoint.x + 1) * testPiece.getGridSize();
+				otherY = (rotPoint.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
+
+				int x = cos(angRad) * (otherX - pivotX)
+					- sin(angRad) * (otherY - pivotY) + pivotX;
+
+				int y = sin(angRad) * (otherX - pivotX)
+					+ cos(angRad) * (otherY - pivotY) + pivotY;
+				// added to both coordinates   -------^
+
+				Position realPos{ x,y };
+				testPiece.realPositions[0] = testPiece.getRealPos();
+				testPiece.realPositions[1] = realPos;
+				*counter = *counter + 1;
+				testPiece.animPos.elapsedTime = 0;
+			}
+
+			if (*counter >= maxCounter)
+			{
+				testPiece.animPos.animType = -1;
+				*counter = 0;
+			}
+		}
+		else if(testPiece.animPos.animType > 0) //obstruction in roation
+		{
+			int* counter = &testPiece.animPos.ctr;
+			double maxCounter = 3; //  animations need to be int when   60/frames -> 60/4=15ms
+			int x, y;
+			if (testPiece.animPos.animType == animTiming.up_right)
+			{//orig shift  left | other shift down
+				if (testPiece.animPos.elapsedTime >= 1000.f / 60)
+				{
+					//shift = 3/4 | 2/4 | 1/4 | 0/4  per tick
+					int shift = ((maxCounter - *counter) / (maxCounter + 1)) * testPiece.getGridSize();
+					//testPiece
+					x = (testPiece.pos.x + 1) * testPiece.getGridSize() + shift;
+					y = (testPiece.pos.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
+					
+					Position realPos{ x,y };
+					testPiece.realPositions[0] = realPos;
+
+					//otherPiece
+					x = (testPiece.otherPiece.pos.x + 1) * testPiece.getGridSize(); 
+					y = (testPiece.otherPiece.pos.y + 1) * testPiece.getGridSize() - shift
+						+ testPiece.getRealBuffer();
+
+					Position realOtherPos{ x,y };
+					testPiece.realPositions[1] = realOtherPos;
+
+					*counter = *counter + 1;
+					testPiece.animPos.elapsedTime = 0;
+				}
+
+				if (*counter >= maxCounter)
+				{
+					testPiece.animPos.animType = -1;
+					*counter = 0;
+				}
+			}
+			else if (testPiece.animPos.animType == animTiming.right_down)
+			{//orig shift up | other shift left
+				if (testPiece.animPos.elapsedTime >= 1000.f / 60)
+				{
+					//shift = 3/4 | 2/4 | 1/4 | 0/4  per tick
+					int shift = ((maxCounter - *counter) / (maxCounter + 1)) * testPiece.getGridSize();
+					//testPiece
+					x = (testPiece.pos.x + 1) * testPiece.getGridSize() ;
+					y = (testPiece.pos.y + 1) * testPiece.getGridSize() + shift + testPiece.getRealBuffer();
+
+					Position realPos{ x,y };
+					testPiece.realPositions[0] = realPos;
+
+					//otherPiece
+					x = (testPiece.otherPiece.pos.x + 1) * testPiece.getGridSize() + shift;
+					y = (testPiece.otherPiece.pos.y + 1) * testPiece.getGridSize() 
+						+ testPiece.getRealBuffer();
+
+					Position realOtherPos{ x,y };
+					testPiece.realPositions[1] = realOtherPos;
+
+					*counter = *counter + 1;
+					testPiece.animPos.elapsedTime = 0;
+				}
+
+				if (*counter >= maxCounter)
+				{
+					testPiece.animPos.animType = -1;
+					*counter = 0;
+				}
+			}
+			else if (testPiece.animPos.animType == animTiming.down_left)
+			{//orig shift right | other shift up
+				if (testPiece.animPos.elapsedTime >= 1000.f / 60)
+				{
+					//shift = 3/4 | 2/4 | 1/4 | 0/4  per tick
+					int shift = ((maxCounter - *counter) / (maxCounter + 1)) * testPiece.getGridSize();
+					//testPiece
+					x = (testPiece.pos.x + 1) * testPiece.getGridSize() - shift;
+					y = (testPiece.pos.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
+
+					Position realPos{ x,y };
+					testPiece.realPositions[0] = realPos;
+
+					//otherPiece
+					x = (testPiece.otherPiece.pos.x + 1) * testPiece.getGridSize();
+					y = (testPiece.otherPiece.pos.y + 1) * testPiece.getGridSize() + shift
+						+ testPiece.getRealBuffer();
+
+					Position realOtherPos{ x,y };
+					testPiece.realPositions[1] = realOtherPos;
+
+					*counter = *counter + 1;
+					testPiece.animPos.elapsedTime = 0;
+				}
+
+				if (*counter >= maxCounter)
+				{
+					testPiece.animPos.animType = -1;
+					*counter = 0;
+				}
+			}
+			else if (testPiece.animPos.animType == animTiming.left_up)
+			{//orig shift down | other shift right
+				if (testPiece.animPos.elapsedTime >= 1000.f / 60)
+				{
+					//shift = 3/4 | 2/4 | 1/4 | 0/4  per tick
+					int shift = ((maxCounter - *counter) / (maxCounter + 1)) * testPiece.getGridSize();
+					//testPiece
+					x = (testPiece.pos.x + 1) * testPiece.getGridSize();
+					y = (testPiece.pos.y + 1) * testPiece.getGridSize() - shift + testPiece.getRealBuffer();
+
+					Position realPos{ x,y };
+					testPiece.realPositions[0] = realPos;
+
+					//otherPiece
+					x = (testPiece.otherPiece.pos.x + 1) * testPiece.getGridSize() - shift;
+					y = (testPiece.otherPiece.pos.y + 1) * testPiece.getGridSize()
+						+ testPiece.getRealBuffer();
+
+					Position realOtherPos{ x,y };
+					testPiece.realPositions[1] = realOtherPos;
+
+					*counter = *counter + 1;
+					testPiece.animPos.elapsedTime = 0;
+				}
+
+				if (*counter >= maxCounter)
+				{
+					testPiece.animPos.animType = -1;
+					*counter = 0;
+				}
+			}
+
+		}
 	}
 }
 
@@ -574,26 +774,20 @@ bool Game::isSideMovePossible(Position newPos)
 	return false;
 }
 
-//deprecated?
+
 bool Game::isDownMovePossible(Position newPos)
 {
-	if (isMovePossible(newPos))
+	if (isMoveFinal(newPos))
 	{
-		if ((newPos.buffer + gameSpeed) < 14)
-			return true;
+		return true;
 	}
-	return false;
-}
+	newPos.y++;
+	if (isMatrixOccupied(newPos))
+	{
+		return true;
+	}
 
-int Game::testMaxFall(Position newPos)
-{
-	int ctr = 0;
-	while (isMovePossible(newPos) && !isMatrixOccupied(newPos))
-	{
-		newPos.y++;
-		ctr++;
-	}
-	return ctr;
+	return false;
 }
 
 /**
@@ -636,7 +830,16 @@ bool Game::isMoveFinal(Position currPos)
 	return false;
 }
 
-
+int Game::testMaxFall(Position newPos)
+{
+	int ctr = 0;
+	while (isMovePossible(newPos) && !isMatrixOccupied(newPos))
+	{
+		newPos.y++;
+		ctr++;
+	}
+	return ctr;
+}
 
 bool Game::isQuit()
 {

@@ -1,9 +1,12 @@
 #pragma once
 //#include "Game.h"  //can't make include loop
 #include <random>
+#include <cmath>
 
-#define GRID_STEPS 4
-#define GRID_SIZE 16
+#define GRID_STEPS	4
+#define GRID_SIZE	16
+#define M_PI		3.14159265358979323846
+
 /*
 *Position inside 8x16 grid,
 * one grid part take X steps (GRID_STEPS) to get through
@@ -21,6 +24,15 @@ struct Color
 	int r, g, b, a;
 };
 
+//use to animate from original pos to current
+struct PositionTransition
+{
+	int ctr = 0;
+	int max = 9; //10 frames of anim during rotation
+	int animType = -1; //0: line | 1: 12->3 | 2: 3->6  | 3:  6->9 | 4: 9->12
+	double lastTime = 0;
+	double elapsedTime = 0;
+};
 
 
 class Piece
@@ -40,12 +52,15 @@ public:
 	void bufferMove(int n);
 
 	int getGridSize();
+	int getRealBuffer();
 	Position getRealPos();
+	
 	//void reset();
 	void burst();
 	void clone(Piece clone);
-private:
+	PositionTransition animPos = {};
 	int screenMultiplier;
 	int rel_to_ScreenGridSize;
+protected:
 };
 
