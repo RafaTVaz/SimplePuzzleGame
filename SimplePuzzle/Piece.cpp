@@ -27,8 +27,8 @@ int Piece::random(int low, int high)
 */
 void Piece::bufferMove()
 {//14 because 16 in already beginning of next position
-	pos.buffer+= jumpStep;
-	if (pos.buffer > 16 - jumpStep)
+	pos.buffer+= jumpStep/2;
+	if (pos.buffer > 16 - jumpStep/2)
 	{
 		pos.buffer = 0;
 		++pos.y;
@@ -40,9 +40,9 @@ void Piece::bufferMove()
 
 void Piece::bufferMove(int n)
 {
-	int step = 4;
+	//int step = 4;
 	pos.buffer += jumpStep;
-	if (pos.buffer > (16- jumpStep) - 2*n)
+	if (pos.buffer > (16 - jumpStep))
 	{
 		pos.buffer = 0;
 		++pos.y;
@@ -69,6 +69,9 @@ int Piece::getRealBuffer()
 
 Position Piece::getRealPos()
 {
+	//if (realPos.buffer == 10)
+	//	return realPos;
+
 	Position realPos{
 		(pos.x+1) * getGridSize(),
 		(pos.y+1) * getGridSize() + getRealBuffer()
@@ -84,7 +87,6 @@ void Piece::clone(Piece clone)
 	connected = false;
 	//pos.buffer = 0;
 }
-
 
 
 void Piece::burst()

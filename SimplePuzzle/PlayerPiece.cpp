@@ -6,7 +6,7 @@ void PlayerPiece::reset()
 	id = random(0, 3);
 	pos = {}; //{1,1} - {8,16}
 	pos.x = random(1, 6);
-	pos.y = 0;//random(1, 16); //FIXME should always be top of grid
+	pos.y = -1;//random(1, 16); //FIXME should always be top of grid
 	connected = true;
 	countrFinal = 0;
 
@@ -26,7 +26,7 @@ void PlayerPiece::reset()
 */
 void PlayerPiece::bufferMove() 
 {//14 because 16 in already beginning of next position
-	otherPiece.bufferMove();
+	//otherPiece.bufferMove();
 
 	pos.buffer += jumpStep;
 	if (pos.buffer > 16 - jumpStep)
@@ -43,7 +43,7 @@ void PlayerPiece::bufferMove(int n)
 {
 	//otherPiece.bufferMove(n);
 	pos.buffer += jumpStep;
-	if (pos.buffer > (16 - jumpStep) - 2 * n)
+	if (pos.buffer > (16 - jumpStep))
 	{
 		pos.buffer = 0;
 		++pos.y;
@@ -63,8 +63,8 @@ Position PlayerPiece::getRealPos()
 	{
 		return realPositions[0];
 	}
-	Position realPos = Piece::getRealPos();
-	return realPos;
+	return Piece::getRealPos();
+	
 }
 Position PlayerPiece::getOtherRealPos()
 {

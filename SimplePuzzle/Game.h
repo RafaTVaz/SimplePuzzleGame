@@ -25,14 +25,6 @@ struct GameInput
 	bool rotateClockwise = false;			// TODO: Check going the right way!
 	bool rotateAnticlockwise = false;		// TODO: Check going the right way!
 	bool pause = false;
-
-//#ifdef _DEBUG
-//	bool debugChangePiece = false;
-//	bool debugMoveLeft = false;
-//	bool debugMoveRight = false;
-//	bool debugMoveUp = false;
-//	bool debugMoveDown = false;
-//#endif
 };
 
 struct Speed
@@ -44,10 +36,12 @@ struct Speed
 
 struct GameState
 {
-	static const int playing = PLAY;	//play freely
-	static const int finalMove = FINAL_MOVE;	//if down play ends, last second before burts
-	static const int bursting = BURST;	//no play input allowed, exploding
+	static const int starting = 0;
+	static const int playing  =	PLAY;	//play freely
+	static const int finalMove= FINAL_MOVE;	//if down play ends, last second before burts
+	static const int bursting =	BURST;	//no play input allowed, exploding
 	static const int waiting  = WAIT;	//burst happened, pieces are falling
+	static const int gameOver = 5;
 };
 
 struct Animation 
@@ -86,6 +80,9 @@ public:
 
 	double getTimePassed();
 	int getCurrentPlayState() { return currPlayState; };
+	int getHighscore() { return score.highscore; };
+	int getBurstPoints() { return score.currBurstPoints; };
+	int getScore() { return score.currBurstPoints; };
 	
 	bool isMatrixOccupied(Position newPos);
 
@@ -93,30 +90,35 @@ public:
 
 	PlayerPiece testPiece; //FIXME pieces should be private
 	Piece pieceMatrix[8][16];
+	GameState playState;
 private:
+	void fillMatrix();
 	bool searchCluster();
 	void resetConnected();
 	int	 findGroupSize(int x, int y);
 	void addBurstPoints();
 	void addToScore();
+	void resetScore();
 	void destroyConnected();
 	void updateGame(); //every X seconds
 	//void updatePlay(Piece* test); //Player input happened
 	void updatePlayerInput(); //Player input happened
 
 	void updateRealPositions();
+	//void bufferRealPosition(int i, int j);
 	bool isMovePossible(Position newPos);
 	bool isSideMovePossible(Position newPos);
 	bool isDownMovePossible(Position newPos);
 	bool isMoveFinal();
 	bool isMoveFinal(Position currPos);
+	bool isGameOver();
 	int  testMaxFall(Position newPos);
+	void resetGame();
 	
 	Timer timer;
 	Speed dropSpeed;
 	GameInput gameInput{};
 	Animation animTiming;
-	GameState playState;
 	Score score;
 
 	std::vector<Piece> connectedPieces;
@@ -126,6 +128,9 @@ private:
 	int gameSpeed;
 	int softDropSpeed;
 	bool quit;
+	bool gameReset;
+	bool gameStart;
+	bool testDrop = false;
 
 
 	SDL_Event event;

@@ -13,6 +13,9 @@
 #define PIXEL_SCALE 2	//depends on size of window?
 #define NUM_PIECES	4	//num of different colored pieces
 #define NUM_SPRITES 21  //num of sprites per piece
+#define FONT_MICRO	12
+#define FONT_SMALL	18
+#define FONT_BIG	32
 
 
 class RenderWindow
@@ -70,7 +73,8 @@ private:
 	SDL_Texture* loadSpriteSheet(const char* p_path);
 	//Current displayed texture
 	TTF_Font*	 fontBig = NULL;
-	TTF_Font*    fontSmall = NULL;
+	TTF_Font*	 fontSmall = NULL;
+	TTF_Font*    fontMicro = NULL;
 	SDL_Texture* spriteSheet = NULL;
 	SDL_Texture* backgroundIMG = NULL;
 	SDL_Texture* ui_IMG = NULL;

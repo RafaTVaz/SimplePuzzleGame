@@ -146,16 +146,23 @@ bool RenderWindow::loadMedia()
 	bool success = true;
 
 	//Open the font
-	int fontSize = 28;
+	int fontSize = FONT_BIG;
 	fontBig = TTF_OpenFont("assets/lazy.ttf", fontSize);
 	if (fontBig == NULL)
 	{
 		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
 		success = false;
 	}
-	fontSize = 12;
+	fontSize = FONT_SMALL;
 	fontSmall = TTF_OpenFont("assets/lazy.ttf", fontSize);
 	if (fontSmall == NULL)
+	{
+		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
+		success = false;
+	}
+	fontSize = FONT_MICRO;
+	fontMicro = TTF_OpenFont("assets/lazy.ttf", fontSize);
+	if (fontMicro == NULL)
 	{
 		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
 		success = false;
@@ -321,21 +328,41 @@ void RenderWindow::renderUI()
 {
 	//GridBox
 	int scale = PIXEL_SCALE; //screen multiplier
+	int x, y;
 	SDL_Rect pos;
 	pos.x = pos.y = getRelGridStart();
 	pos.w = 160 * scale;
 	pos.h = 288 * scale;
 	SDL_RenderCopy(renderer, ui_IMG, NULL, &pos);
 
-	//Calculate and correct fps
-	double avgFPS = countedFrames / (gameCurrent->getTimePassed());
-	if (avgFPS > 2000000)
-	{
-		avgFPS = 0;
-	}
+
 	char tempText[17];
-	_gcvt_s(tempText, sizeof(tempText), *currFPS, 8);
-	drawText(tempText, screenW/2, 20, fontSmall, colWhite);
+	_gcvt_s(tempText, sizeof(tempText), *currFPS, 4);
+	x = screenW - 20 * scale; 
+	y = 5 * scale;
+	drawText(tempText, x, y, fontMicro, colWhite);
+
+	if(gameCurrent->getCurrentPlayState() == gameCurrent->playState.starting)
+	{
+		x = screenW / 2;
+		y = 11 * scale + FONT_BIG;
+		//drawText("GAME OVER",				screenW/2, 10*PIXEL_SCALE, fontBig, colWhite);
+		drawText("Press Space/Start", x, y, fontSmall, colWhite);
+	}
+	else if (gameCurrent->getCurrentPlayState() == gameCurrent->playState.gameOver)
+	{
+		x = screenW / 2;
+		y = 10 * scale;
+		drawText("GAME OVER", x, y, fontBig, colWhite);
+		drawText("Press Space/Start to continue", x, y+ scale + FONT_BIG, fontSmall, colWhite);
+	}
+		
+		x = screenW / 2;
+		y = 50 * scale + FONT_BIG;
+		drawText("HIGH SCORE:", x, y, fontBig, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getHighscore(), 4);
+		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
+
 }
 
 /**
@@ -446,11 +473,13 @@ bool RenderWindow::destroyTextures()
 	}
 	TTF_CloseFont(fontBig);
 	TTF_CloseFont(fontSmall);
+	TTF_CloseFont(fontMicro);
 	SDL_DestroyTexture(spriteSheet);
 	SDL_DestroyTexture(backgroundIMG);
 	SDL_DestroyTexture(ui_IMG);
 	fontBig = NULL;
 	fontSmall = NULL;
+	fontMicro = NULL;
 	spriteSheet = NULL;
 	backgroundIMG = NULL;
 	ui_IMG = NULL;

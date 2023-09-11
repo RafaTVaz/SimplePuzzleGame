@@ -3,6 +3,8 @@
 #include <random>
 #include <cmath>
 
+
+
 #define GRID_STEPS	4
 #define GRID_SIZE	16
 #define M_PI		3.14159265358979323846
@@ -43,6 +45,7 @@ public:
 
 	int id = 0;  //4 different pieces {0-3} not active = -1
 	Position pos;
+	//Position realPos;
 	bool connected = false;
 	int countrFinal = 0;	//counter time before piece is set
 	int jumpStep = 8;
