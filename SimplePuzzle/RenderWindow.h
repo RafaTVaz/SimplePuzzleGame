@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include <array>
+#include <cmath>
 
 
 #include "Game.h"

@@ -344,6 +344,7 @@ void RenderWindow::renderUI()
 	y = 5 * scale;
 	drawText(tempText, x, y, fontMicro, colWhite);
 
+/*STARTING********************************/
 	if(gameCurrent->getCurrentPlayState() == gameCurrent->playState.starting)
 	{
 		x = screenW / 2 + shift;
@@ -351,6 +352,7 @@ void RenderWindow::renderUI()
 		//drawText("GAME OVER",				screenW/2, 10*PIXEL_SCALE, fontBig, colWhite);
 		drawText("Press Space/Start", x, y, fontSmall, colWhite);
 	}
+/*GAME OVER********************************/
 	else if (gameCurrent->getCurrentPlayState() == gameCurrent->playState.gameOver)
 	{
 		x = screenW / 2 + shift;
@@ -361,15 +363,16 @@ void RenderWindow::renderUI()
 		x = screenW / 2 + shift;
 		y = 10 + FONT_BIG; y *= scale;
 		drawText("High Score:", x, y, fontBig, colWhite);
-		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getHighscore(), 4);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getHighscore(), 10);
 		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
 
 		x = screenW / 2 + shift;
 		y = 50 * scale + 3 * FONT_BIG;
-		drawText("SCORE:", x, y, fontBig, colWhite);
-		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getScore(), 4);
+		drawText("Score:", x, y, fontBig, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getScore(), 10);
 		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
 	}
+/*PAUSED********************************/
 	else if (gameCurrent->isTimePaused())
 	{
 		x = screenW / 2 + shift;
@@ -377,26 +380,47 @@ void RenderWindow::renderUI()
 		drawText("GAME PAUSED", x, y, fontBig, colWhite);
 		drawText("Press P to continue", x, y + scale + FONT_BIG, fontSmall, colWhite);
 	}
+/*GAMING********************************/
 	else
 	{
-		x = screenW / 2;
-		y = 10 + FONT_BIG; y *= scale;
+		x = screenW * 3 / 5;
+		y = screenH - 3* FONT_BIG*scale;
 		drawText("High Score:", x, y, fontBig, colWhite);
-		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getHighscore(), 4);
-		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getHighscore(), 10);
+		drawText(tempText, x, y + scale + FONT_BIG, fontBig, colWhite);
 
-		x = screenW / 2;
+		x = screenW *3/5;
 		y = 50 * scale + 3 *FONT_BIG;
 		drawText("Score:", x, y, fontBig, colWhite);
-		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getScore(), 4);
-		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getScore(), 10);
+		drawText(tempText, x + 55 * scale , y, fontBig, colWhite);
 
-		x = screenW / 2;
-		y = 50 * scale + 5 * FONT_BIG;
-		drawText("Burst Points:", x, y, fontBig, colWhite);
-		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getBurstPoints(), 4);
-		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
+		x = screenW * 3 / 5;
+		y = 50 * scale + 4 * FONT_BIG;
+		drawText("Burst:", x, y, fontSmall, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getBurstPoints(), 10);
+		drawText(tempText, x + 56 * scale, y , fontSmall, colWhite);
+
+		x = screenW/2;
+		y = 5 * scale;
+		double t_time = gameCurrent->getTimePassed();
+		int num = floor(log10(t_time)) > 0 ? floor(log10(t_time)): 0;
+		num++;
+		//printf("num :%d		log: %f		floor; %f\n", num, log10(t_time), floor(log10(t_time)));
+		drawText("Time:", x, y, fontSmall, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), t_time, num);
+		drawText(tempText, x + 25 * scale, y , fontSmall, colWhite);
 	}
+
+	x = 10 * scale;
+	y = screenH - 3 * FONT_SMALL;
+	//drawText("GAME OVER",				screenW/2, 10*PIXEL_SCALE, fontBig, colWhite);
+	drawText("Left/Right: move Piece | Up: Hard Drop | Down: Slow Drop", x, y, fontSmall, colWhite);
+
+	x = 10 * scale;
+	y = screenH -  30;
+	//drawText("GAME OVER",				screenW/2, 10*PIXEL_SCALE, fontBig, colWhite);
+	drawText("Z: Rotate | P: Pause", x, y, fontSmall, colWhite);
 		
 }
 
