@@ -187,7 +187,8 @@ bool RenderWindow::loadMedia()
 		printf("Failed to load texture sprite!\n");
 		success = false;
 	}*/
-	spriteSheet = loadSpriteSheet("assets/PuyoPuyo-Sprites.png");
+	//spriteSheet = loadSpriteSheet("assets/PuyoPuyo-Sprites.png");
+	spriteSheet = loadSpriteSheet("assets/Sprites-game.png");
 	if (spriteSheet == NULL)
 	{
 		printf("Failed to load texture sprite!\n");
@@ -328,9 +329,10 @@ void RenderWindow::renderUI()
 {
 	//GridBox
 	int scale = PIXEL_SCALE; //screen multiplier
-	int x, y;
+	int x, y; 
+	int shift = 5 * scale;
 	SDL_Rect pos;
-	pos.x = pos.y = getRelGridStart();
+	pos.x = pos.y = getRealGridStart();
 	pos.w = 160 * scale;
 	pos.h = 288 * scale;
 	SDL_RenderCopy(renderer, ui_IMG, NULL, &pos);
@@ -344,25 +346,58 @@ void RenderWindow::renderUI()
 
 	if(gameCurrent->getCurrentPlayState() == gameCurrent->playState.starting)
 	{
-		x = screenW / 2;
+		x = screenW / 2 + shift;
 		y = 11 * scale + FONT_BIG;
 		//drawText("GAME OVER",				screenW/2, 10*PIXEL_SCALE, fontBig, colWhite);
 		drawText("Press Space/Start", x, y, fontSmall, colWhite);
 	}
 	else if (gameCurrent->getCurrentPlayState() == gameCurrent->playState.gameOver)
 	{
-		x = screenW / 2;
+		x = screenW / 2 + shift;
 		y = 10 * scale;
 		drawText("GAME OVER", x, y, fontBig, colWhite);
 		drawText("Press Space/Start to continue", x, y+ scale + FONT_BIG, fontSmall, colWhite);
-	}
-		
-		x = screenW / 2;
-		y = 50 * scale + FONT_BIG;
-		drawText("HIGH SCORE:", x, y, fontBig, colWhite);
+
+		x = screenW / 2 + shift;
+		y = 10 + FONT_BIG; y *= scale;
+		drawText("High Score:", x, y, fontBig, colWhite);
 		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getHighscore(), 4);
 		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
 
+		x = screenW / 2 + shift;
+		y = 50 * scale + 3 * FONT_BIG;
+		drawText("SCORE:", x, y, fontBig, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getScore(), 4);
+		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
+	}
+	else if (gameCurrent->isTimePaused())
+	{
+		x = screenW / 2 + shift;
+		y = 10 * scale;
+		drawText("GAME PAUSED", x, y, fontBig, colWhite);
+		drawText("Press P to continue", x, y + scale + FONT_BIG, fontSmall, colWhite);
+	}
+	else
+	{
+		x = screenW / 2;
+		y = 10 + FONT_BIG; y *= scale;
+		drawText("High Score:", x, y, fontBig, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getHighscore(), 4);
+		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
+
+		x = screenW / 2;
+		y = 50 * scale + 3 *FONT_BIG;
+		drawText("Score:", x, y, fontBig, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getScore(), 4);
+		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
+
+		x = screenW / 2;
+		y = 50 * scale + 5 * FONT_BIG;
+		drawText("Burst Points:", x, y, fontBig, colWhite);
+		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getBurstPoints(), 4);
+		drawText(tempText, x, y + scale + FONT_BIG, fontSmall, colWhite);
+	}
+		
 }
 
 /**
@@ -402,7 +437,7 @@ void RenderWindow::renderPieces()
 	int id = 0;
 	int animSprite = 1;
 	spriteSize = gameCurrent->testPiece.getGridSize(); //16x16
-	mapStart = getRelGridStart(); //pixel where the playable area starts
+	mapStart = getRealGridStart(); //pixel where the playable area starts
 
 	
 

@@ -152,6 +152,7 @@
     <Image Include="assets\Frame.png" />
     <Image Include="assets\PuyoPuyo-Sprites.png" />
     <Image Include="assets\sprite-1.png" />
+    <Image Include="assets\Sprites-game.png" />
     <Image Include="assets\Sprites-Page.png" />
   </ItemGroup>
   <ItemGroup>

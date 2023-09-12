@@ -29,9 +29,14 @@ struct GameInput
 
 struct Speed
 {
-	int slow = 2;
-	int normal = 2;
-	int fast = 2;
+	static const int slow = 1;
+	static const int normal = 2;
+	static const int fast = 3;
+	static const int ultra = 4;
+	static const int impossible = 5;
+
+	int speedUpTick = 15;	//seconds
+	int speedUpTime= speedUpTick;
 };
 
 struct GameState
@@ -46,7 +51,7 @@ struct GameState
 
 struct Animation 
 {
-	static const int fps_falling = 1; //probs 6; changes with difficulty
+	static const int fps_falling = 3; //probs 6; changes with difficulty
 	static const int fps_spriteAnim = 2;
 	static const int fps_finalDecision = 3; 
 
@@ -66,8 +71,11 @@ struct Animation
 struct Score {
 	int highscore = 0;
 	int currBurstPoints = 0;
+	int burstScore = 0;
 	int currScore = 0;
 	int burstCount = 0;
+
+	bool newHighScore = false;
 };
 
 class Game
@@ -78,11 +86,12 @@ public:
 	void checkKeyPress();
 	void run();
 
-	double getTimePassed();
+	double getTimePassed() { return timer.getTicks() / 1000.f; };
+	bool isTimePaused() { return timer.isPaused(); };
 	int getCurrentPlayState() { return currPlayState; };
 	int getHighscore() { return score.highscore; };
-	int getBurstPoints() { return score.currBurstPoints; };
-	int getScore() { return score.currBurstPoints; };
+	int getBurstPoints() { return score.burstScore; };
+	int getScore() { return score.currScore; };
 	
 	bool isMatrixOccupied(Position newPos);
 
@@ -93,6 +102,7 @@ public:
 	GameState playState;
 private:
 	void fillMatrix();
+	void fillLine();
 	bool searchCluster();
 	void resetConnected();
 	int	 findGroupSize(int x, int y);

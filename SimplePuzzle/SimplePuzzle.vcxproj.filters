@@ -53,6 +53,9 @@
     <Image Include="assets\PuyoPuyo-Sprites.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="assets\Sprites-game.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderWindow.h">

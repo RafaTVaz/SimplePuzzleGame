@@ -10,7 +10,7 @@ Game::Game()
 	gameReset = false;
 	gameStart = false;
 	timer.start();
-	gameSpeed = dropSpeed.normal;
+	gameSpeed = dropSpeed.slow;
 	currPlayState = playState.starting;
 	softDropSpeed = dropSpeed.fast;
 	connectedPieces.clear();
@@ -108,6 +108,7 @@ void Game::run()
 			//printf("%d\n", testPiece.pos.buffer);
 		}
 	}
+	//printf("Time: %d\n", timer.getTicks() / 1000);
 	updateGame();
 	updateRealPositions();
 
@@ -124,8 +125,11 @@ void Game::updatePlayerInput()
 		}
 		else
 		{
-			timer.pause();
-			printf("PAUSE\n");
+			if(currPlayState != playState.starting && currPlayState != playState.gameOver)
+			{
+				timer.pause();
+				printf("PAUSE\n");
+			}
 		}
 	}
 
@@ -334,6 +338,7 @@ void Game::updateGame()
 	case playState.gameOver:
 		if (gameStart)
 		{
+			resetScore();
 			currPlayState = playState.starting;
 		}
 		
@@ -346,7 +351,7 @@ void Game::updateGame()
 		}
 
 		//BUFFER MOVE
-		else if (animTiming.elapsedTime >= 1000.f / animTiming.fps_falling)
+		else if (animTiming.elapsedTime >= 1000.f / (gameSpeed*2))
 		{// if elapsed time > 1/2 second 
 			Position temp = testPiece.pos;
 			++temp.y;
@@ -405,6 +410,7 @@ void Game::updateGame()
 			{
 				gameReset = false;
 				resetScore();
+				timer.start();
 				currPlayState = playState.playing;
 				break;
 			}
@@ -412,7 +418,28 @@ void Game::updateGame()
 			//std::fill(linesBursted, linesBursted + 7, 0);
 			//printf("BURSTEND\n");
 			testPiece.reset();
+			score.burstScore = score.currBurstPoints;
 			addToScore();
+
+			//speed up after 30 seconds
+			if (timer.getTicks() / 1000 > dropSpeed.speedUpTime) 
+			{
+				dropSpeed.speedUpTime += dropSpeed.speedUpTick;
+				fillLine();
+				if (gameSpeed < dropSpeed.impossible) 
+				{
+					gameSpeed++;
+					printf("SPEED UP: %d\n", gameSpeed);
+				
+					if (gameSpeed == dropSpeed.fast) 
+						dropSpeed.speedUpTick *= 2;
+				}
+
+
+				animTiming.elapsedTime = 0;
+				currPlayState = playState.waiting;
+				break;
+			}
 
 			currPlayState = playState.playing;
 			animTiming.elapsedTime = 0;
@@ -426,14 +453,14 @@ void Game::updateGame()
 		int a, b;
 		Position temp;
 		//start from the bottom and go up
-		for (int i = 0; i < 8; i++) {
-			for (int j = 15; j > 0; j--) {
+		for (int j = 15; j > 0; j--) {
+			for (int i = 0; i < 8; i++) {
 				if (pieceMatrix[i][j].id == -1 && pieceMatrix[i][j - 1].id >= 0)
 				{
 					temp = pieceMatrix[i][j - 1].pos;
 					falling = true;
 					//BUFFER MOVE
-					if (animTiming.elapsedTime >= 1000.f / 30)//animTiming.elapsedTime >= 1000.f / animTiming.fps_falling)
+					if (animTiming.elapsedTime >= 1000.f / 60)//animTiming.elapsedTime >= 1000.f / animTiming.fps_falling)
 					{
 						animated = true;
 						++temp.y;
@@ -456,7 +483,7 @@ void Game::updateGame()
 			animTiming.elapsedTime = 0;
 		}
 
-		if (!falling && animTiming.elapsedTime >= 1000.f / 10)
+		if (!falling && animTiming.elapsedTime >= 1000.f / 6)
 		{
 			currPlayState = playState.bursting;
 		}
@@ -469,8 +496,8 @@ void Game::updateGame()
 void Game::resetGame() 
 {
 	timer.start();
-	gameSpeed = dropSpeed.normal;
-	softDropSpeed = dropSpeed.fast;
+	gameSpeed = dropSpeed.slow;
+	softDropSpeed = 2;
 	connectedPieces.clear();
 
 	// Initialize each element to an empty/default state
@@ -490,7 +517,8 @@ void Game::fillMatrix()
 	// Initialize each element to an empty/default state
 	for (int j = 1; j < 16; j++) {
 		for (int i = 0; i < 8; i++) {
-			pieceMatrix[i][j].id = testPiece.random(-1, 3); //nonexistent or colored piece
+			if(pieceMatrix[i][j].id == -1)
+				pieceMatrix[i][j].id = testPiece.random(-1, 3); //nonexistent or colored piece
 			if (pieceMatrix[i][j].id != -1)
 			{
 				pieceMatrix[i][j].pos = Position{ i, j };
@@ -501,6 +529,19 @@ void Game::fillMatrix()
 		}
 	}
 endofloop:;
+}
+void Game::fillLine()
+{
+	int j = 1;
+	// Initialize each element to an empty/default state
+	for (int i = 0; i < 8; i++) {
+		if (pieceMatrix[i][j].id == -1)
+			pieceMatrix[i][j].id = testPiece.random(-1, 3); //nonexistent or colored piece
+		if (pieceMatrix[i][j].id != -1)
+		{
+			pieceMatrix[i][j].pos = Position{ i, j };
+		}
+	}
 }
 
 
@@ -946,14 +987,10 @@ void Game::resetScore()
 {
 	score.burstCount = 0;
 	score.currBurstPoints = 0;
+	score.burstScore = 0;
 	score.currScore = 0;
 }
 
-//returns timer in seconds
-double Game::getTimePassed()
-{
-	return timer.getTicks()/1000.f; 
-}
 
 bool Game::isMatrixOccupied(Position newPos)
 {
