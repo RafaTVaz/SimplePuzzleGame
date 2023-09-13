@@ -91,6 +91,7 @@ void Game::run()
 {
 	//Piece* testPiece = new Piece();
 
+	currSound = -1;
 	//Handle events on queue
 	while (SDL_PollEvent(&event) != 0)
 	{
@@ -122,13 +123,16 @@ void Game::updatePlayerInput()
 		if(timer.isPaused())
 		{
 			timer.unpause();
+
+			currSound = sounds.start;
 		}
 		else
 		{
 			if(currPlayState != playState.starting && currPlayState != playState.gameOver)
 			{
 				timer.pause();
-				printf("PAUSE\n");
+
+				currSound = sounds.start;
 			}
 		}
 	}
@@ -165,6 +169,7 @@ void Game::updatePlayerInput()
 					{
 						currPlayState = playState.playing;
 					}
+					currSound = sounds.move;
 				}
 				//printf("Left: %d | %d \n", testPiece.pos.x, testPiece.pos.y);
 			}
@@ -189,6 +194,7 @@ void Game::updatePlayerInput()
 					{
 						currPlayState = playState.playing;
 					}
+					currSound = sounds.move;
 				}
 				//printf("Right: %d | %d \n", testPiece.pos.x, testPiece.pos.y);
 			}
@@ -241,12 +247,14 @@ void Game::updatePlayerInput()
 					{
 						testPiece.otherPiece.pos = pPivot;
 						testPiece.setNewAnimPos(); 
+						currSound = sounds.rotate;
 					}
 					else if(isSideMovePossible(pTest))
 					{
 						testPiece.otherPiece.pos = testPiece.pos;
 						testPiece.pos.x--;
 						testPiece.setNewAnimPos(type);
+						currSound = sounds.rotate;
 					}
 				}
 				//Right, move to Below 
@@ -260,12 +268,14 @@ void Game::updatePlayerInput()
 					{
 						testPiece.otherPiece.pos = pPivot;
 						testPiece.setNewAnimPos(); 
+						currSound = sounds.rotate;
 					}
 					else
 					{
 						testPiece.otherPiece.pos = testPiece.pos;
 						testPiece.pos.y--;
 						testPiece.setNewAnimPos(type);
+						currSound = sounds.rotate;
 					}
 				}
 				//Below, move to Left 
@@ -280,12 +290,14 @@ void Game::updatePlayerInput()
 						testPiece.otherPiece.pos = pPivot;
 						testPiece.setNewAnimPos(); 
 
+						currSound = sounds.rotate;
 					}
 					else if(isSideMovePossible(pTest))
 					{
 						testPiece.otherPiece.pos = testPiece.pos;
 						testPiece.pos.x++;
 						testPiece.setNewAnimPos(type);
+						currSound = sounds.rotate;
 					}
 				}
 				//Left, move to Above 
@@ -297,12 +309,14 @@ void Game::updatePlayerInput()
 					{
 						testPiece.otherPiece.pos = pPivot;
 						testPiece.setNewAnimPos(); 
+						currSound = sounds.rotate;
 					}
 					else
 					{
 						testPiece.otherPiece.pos = testPiece.pos;
 						testPiece.pos.y++;
 						testPiece.setNewAnimPos(type);
+						currSound = sounds.rotate;
 					}
 				}
 			}
@@ -318,7 +332,6 @@ void Game::updateGame()
 	Uint32 deltaTime = currTime - animTiming.lastTime;
 	bool burstEnd = false;
 	bool burst = false;
-	
 
 	animTiming.lastTime = currTime;
 	animTiming.elapsedTime += deltaTime;
@@ -332,6 +345,7 @@ void Game::updateGame()
 			fillMatrix();
 			currPlayState = playState.waiting; //blocks fall 
 			gameStart = false;
+			currSound = sounds.start;
 		}
 		
 		break;
@@ -340,6 +354,7 @@ void Game::updateGame()
 		{
 			resetScore();
 			currPlayState = playState.starting;
+			
 		}
 		
 		break;
@@ -348,6 +363,7 @@ void Game::updateGame()
 		{
 			currPlayState = playState.finalMove;
 			animTiming.elapsedTime = 0;
+			currSound = sounds.pop;
 		}
 
 		//BUFFER MOVE
@@ -374,6 +390,7 @@ void Game::updateGame()
 			{
 				currPlayState = playState.gameOver;
 				animTiming.elapsedTime = 0;
+				currSound = sounds.lost;
 				break;
 			}
 			testPiece.connected = false;
@@ -390,6 +407,8 @@ void Game::updateGame()
 			pieceMatrix[testPiece.pos.x][testPiece.pos.y].clone(testPiece);
 			pieceMatrix[testPiece.otherPiece.pos.x][testPiece.otherPiece.pos.y].clone(testPiece.otherPiece);
 			animTiming.elapsedTime = 0;
+
+			currSound = sounds.set;
 		}
 		
 		break;
@@ -402,6 +421,7 @@ void Game::updateGame()
 			addBurstPoints();
 			destroyConnected();
 			currPlayState = playState.waiting;
+			currSound = sounds.burst;
 		}
 			
 		if (burstEnd)
@@ -426,6 +446,7 @@ void Game::updateGame()
 			{
 				dropSpeed.speedUpTime += dropSpeed.speedUpTick;
 				fillLine();
+				currSound = sounds.wave;
 				if (gameSpeed < dropSpeed.impossible) 
 				{
 					gameSpeed++;

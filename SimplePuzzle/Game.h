@@ -78,6 +78,18 @@ struct Score {
 	bool newHighScore = false;
 };
 
+struct Sounds {
+	static const int input = 0;
+	static const int move = 1;
+	static const int rotate = 2;
+	static const int burst = 3;
+	static const int start = 4;
+	static const int set = 5;
+	static const int pop = 6;
+	static const int wave = 7;
+	static const int lost = 8;
+};
+
 class Game
 {
 public:
@@ -92,6 +104,7 @@ public:
 	int getHighscore() { return score.highscore; };
 	int getBurstPoints() { return score.burstScore; };
 	int getScore() { return score.currScore; };
+	int getSound() { return currSound; };
 	
 	bool isMatrixOccupied(Position newPos);
 
@@ -100,6 +113,7 @@ public:
 	PlayerPiece testPiece; //FIXME pieces should be private
 	Piece pieceMatrix[8][16];
 	GameState playState;
+	Sounds sounds;
 private:
 	void fillMatrix();
 	void fillLine();
@@ -135,6 +149,7 @@ private:
 
 	int linesBursted[7] = {};
 	int currPlayState;
+	int currSound;
 	int gameSpeed;
 	int softDropSpeed;
 	bool quit;

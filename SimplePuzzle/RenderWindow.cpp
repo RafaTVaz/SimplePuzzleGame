@@ -11,6 +11,7 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 {
 	screenW = p_width;
 	screenH = p_height;
+	//Texture filtering Default is nearest pixel sampling, what is wanted for pixel art
 	//TODO for fullscreen bool: SDL_WINDOW_FULLSCREEN_DESKTOP 
 	window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenW, screenH, SDL_WINDOW_SHOWN);
 	if (window == NULL)
@@ -19,6 +20,7 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 	}
 	else
 	{
+		
 		//Get window surface Not compatible with rendering
 		/*screenSurface = SDL_GetWindowSurface(window);
 
@@ -53,6 +55,13 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 				printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
 				window = NULL;
 			}
+			//Initialize SDL_mixer
+			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+			{
+				printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+				window = NULL;
+			}
+			Mix_Volume(-1, MIX_MAX_VOLUME / 2);
 		}
 	}
 }
@@ -64,7 +73,7 @@ RenderWindow::~RenderWindow()
 	gameCurrent = NULL;
 
 	//Destroy all loaded images, text, sprites
-	destroyTextures();
+	destroyLoadedMedia();
 
 	//Destroy window
 	SDL_DestroyRenderer(renderer);
@@ -74,6 +83,7 @@ RenderWindow::~RenderWindow()
 
 
 	//Quit SDL subsystems
+	Mix_Quit();
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
@@ -138,8 +148,6 @@ bool RenderWindow::loadBackground(const char* p_path)
 	return true;
 }
 
-
-
 bool RenderWindow::loadMedia()
 {
 	//Loading success flag
@@ -194,6 +202,71 @@ bool RenderWindow::loadMedia()
 		printf("Failed to load texture sprite!\n");
 		success = false;
 	}
+
+
+	//Load Sounds
+
+		//Load music
+	/*gSound_Music = Mix_LoadMUS("21_sound_effects_and_music/beat.wav");
+	if (gSound_Music == NULL)
+	{
+		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}*/
+
+	//Load sound effects
+	gSound_Pop = Mix_LoadWAV("assets/sounds/hit.wav");
+	if (gSound_Pop == NULL)
+	{
+		printf("Failed to load scratch sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+
+	gSound_Input = Mix_LoadWAV("assets/sounds/input.wav");
+	if (gSound_Input == NULL)
+	{
+		printf("Failed to load high sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+
+	gSound_Burst = Mix_LoadWAV("assets/sounds/explosion.wav");
+	if (gSound_Burst == NULL)
+	{
+		printf("Failed to load medium sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+
+	gSound_Start = Mix_LoadWAV("assets/sounds/coin.wav");
+	if (gSound_Start == NULL)
+	{
+		printf("Failed to load low sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+	gSound_Rotate = Mix_LoadWAV("assets/sounds/rotate.wav");
+	if (gSound_Start == NULL)
+	{
+		printf("Failed to load low sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+	gSound_Move = Mix_LoadWAV("assets/sounds/Move.wav");
+	if (gSound_Start == NULL)
+	{
+		printf("Failed to load low sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+	gSound_newWave = Mix_LoadWAV("assets/sounds/newWave.wav");
+	if (gSound_Start == NULL)
+	{
+		printf("Failed to load low sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+	gSound_GameOver = Mix_LoadWAV("assets/sounds/gameOver.wav");
+	if (gSound_Start == NULL)
+	{
+		printf("Failed to load low sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+
 	return success;
 }
 
@@ -307,6 +380,7 @@ void RenderWindow::display()
 	renderBackground();
 	renderPieces();
 	renderUI();
+	playSounds();
 	//Update screen
 	SDL_RenderPresent(renderer);
 	countedFrames++;
@@ -420,8 +494,45 @@ void RenderWindow::renderUI()
 	x = 10 * scale;
 	y = screenH -  30;
 	//drawText("GAME OVER",				screenW/2, 10*PIXEL_SCALE, fontBig, colWhite);
-	drawText("Z: Rotate | P: Pause", x, y, fontSmall, colWhite);
-		
+	drawText("Z: Rotate | P: Pause", x, y, fontSmall, colWhite);		
+}
+
+void RenderWindow::playSounds()
+{
+	int soundID = gameCurrent->getSound();
+	
+	switch (soundID)
+	{
+	case gameCurrent->sounds.input:
+		Mix_PlayChannel(-1, gSound_Input, 0);
+		break;
+	case gameCurrent->sounds.move:
+		Mix_PlayChannel(-1, gSound_Move, 0);
+		break;
+	case gameCurrent->sounds.rotate:
+		Mix_PlayChannel(-1, gSound_Rotate, 0);
+		break;
+	case gameCurrent->sounds.burst:
+		Mix_PlayChannel(-1, gSound_Burst, 0);
+		break;
+	case gameCurrent->sounds.start:
+		Mix_PlayChannel(-1, gSound_Start, 0);
+		break;
+	case gameCurrent->sounds.set:
+		Mix_PlayChannel(-1, gSound_Pop, 0);
+		break;
+	case gameCurrent->sounds.pop:
+		Mix_PlayChannel(-1, gSound_Input, 0);
+		break;
+	case gameCurrent->sounds.wave:
+		Mix_PlayChannel(-1, gSound_newWave, 0);
+		break;
+	case gameCurrent->sounds.lost:
+		Mix_PlayChannel(-1, gSound_GameOver, 0);
+		break;
+
+	
+	}	
 }
 
 /**
@@ -523,8 +634,26 @@ void RenderWindow::setGame(Game* gameInstance, double* p_fps)
 	currFPS = p_fps;
 }
 
-bool RenderWindow::destroyTextures()
+bool RenderWindow::destroyLoadedMedia()
 {
+	//Free the sound effects
+	Mix_FreeChunk(gSound_Pop);
+	Mix_FreeChunk(gSound_Input);
+	Mix_FreeChunk(gSound_Burst);
+	Mix_FreeChunk(gSound_Start);
+
+	gSound_Pop = NULL;
+	gSound_Input = NULL;
+	gSound_Burst = NULL;
+	gSound_Start = NULL;
+
+	//Free the music
+	Mix_FreeMusic(gSound_Music);
+	gSound_Music = NULL;
+
+
+
+	//Free Text and Images
 	if (backgroundPNG != NULL)
 	{
 		SDL_FreeSurface(backgroundPNG);

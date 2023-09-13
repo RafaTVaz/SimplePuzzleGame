@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_mixer\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_mixer\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_mixer\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\include;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_mixer\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_image\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2_ttf\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -117,7 +117,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -134,7 +134,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>D:\Normal Disk\MyArt\Games\Miniclip-Game\SDL2\lib\x64;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -164,6 +164,17 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="assets\lazy.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="assets\sounds\coin.wav" />
+    <Media Include="assets\sounds\explosion.wav" />
+    <Media Include="assets\sounds\gameOver.wav" />
+    <Media Include="assets\sounds\hit-Small.wav" />
+    <Media Include="assets\sounds\input.wav" />
+    <Media Include="assets\sounds\move.wav" />
+    <Media Include="assets\sounds\newWave.wav" />
+    <Media Include="assets\sounds\rotate.wav" />
+    <Media Include="assets\sounds\set.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

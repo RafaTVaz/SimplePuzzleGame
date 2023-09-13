@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include <array>
@@ -25,16 +26,17 @@ public:
 	RenderWindow(const char* p_title, int p_width, int p_height ); //TODO fullscreen bool 
 	~RenderWindow();
 	void display();
-	void displayUI();
-	void renderPieces();
-	void renderBackground();
-	void renderUI();
 
 	bool loadMedia();
 
 	void setGame(Game* gameInstance, double* p_fps);
 
 private:
+	void displayUI();
+	void renderPieces();
+	void renderBackground();
+	void renderUI();
+	void playSounds();
 	int getRealGridStart() {
 		return GRID_START * PIXEL_SCALE;// *gameCurrent->testPiece.getGridSize();
 	};
@@ -44,7 +46,7 @@ private:
 	void drawText(const char* text, int x, int y, TTF_Font* font, SDL_Color color);
 	bool loadBackground(const char* p_location);
 	void renderPlayPieces();
-	bool destroyTextures();
+	bool destroyLoadedMedia();
 
 	int spriteSize = 0; //16x16
 	int mapStart = 0;
@@ -79,6 +81,19 @@ private:
 	SDL_Texture* spriteSheet = NULL;
 	SDL_Texture* backgroundIMG = NULL;
 	SDL_Texture* ui_IMG = NULL;
+
+	//The music that will be played
+	Mix_Music* gSound_Music = NULL; //gameOver?
+
+	//The sound effects that will be used
+	Mix_Chunk* gSound_Pop = NULL;
+	Mix_Chunk* gSound_Input = NULL;
+	Mix_Chunk* gSound_Move = NULL;
+	Mix_Chunk* gSound_Rotate = NULL;
+	Mix_Chunk* gSound_Burst = NULL;
+	Mix_Chunk* gSound_newWave = NULL;
+	Mix_Chunk* gSound_Start = NULL;
+	Mix_Chunk* gSound_GameOver = NULL;
 
 	//The surface contained by the window
 	SDL_Surface* screenSurface = NULL;
