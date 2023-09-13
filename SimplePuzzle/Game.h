@@ -22,11 +22,12 @@ struct GameInput
 	bool moveRight = false;
 	bool hardDrop = false; //up
 	bool softDrop = false; //down
-	bool rotateClockwise = false;			// TODO: Check going the right way!
-	bool rotateAnticlockwise = false;		// TODO: Check going the right way!
+	bool rotateClockwise = false;			
+	bool rotateAnticlockwise = false;		// Not used, no point in complicating
 	bool pause = false;
 };
 
+//speed values and aditional help for changing speeds
 struct Speed
 {
 	static const int slow = 1;
@@ -50,8 +51,8 @@ struct GameState
 };
 
 struct Animation 
-{
-	static const int fps_falling = 3; //probs 6; changes with difficulty
+{//fps here is frames in a second, so 3 = 0.333 of a second
+	static const int fps_falling = 3;
 	static const int fps_spriteAnim = 2;
 	static const int fps_finalDecision = 3; 
 
@@ -66,6 +67,7 @@ struct Animation
 
 	double elapsedTime = 0;
 	double lastTime = 0;
+	int screenShake = 0; //ammount of pixels to be moved
 };
 
 struct Score {
@@ -88,6 +90,8 @@ struct Sounds {
 	static const int pop = 6;
 	static const int wave = 7;
 	static const int lost = 8;
+
+	bool mute = false;
 };
 
 class Game
@@ -105,12 +109,15 @@ public:
 	int getBurstPoints() { return score.burstScore; };
 	int getScore() { return score.currScore; };
 	int getSound() { return currSound; };
+	int getShake() { return animTiming.screenShake; };
+	void lowerShake() { if(animTiming.screenShake>0)animTiming.screenShake--; };
+	bool isMute() {return sounds.mute;};
 	
 	bool isMatrixOccupied(Position newPos);
 
-	bool isQuit();
+	bool isQuit() {	return quit;};
 
-	PlayerPiece testPiece; //FIXME pieces should be private
+	PlayerPiece testPiece;
 	Piece pieceMatrix[8][16];
 	GameState playState;
 	Sounds sounds;
@@ -124,8 +131,7 @@ private:
 	void addToScore();
 	void resetScore();
 	void destroyConnected();
-	void updateGame(); //every X seconds
-	//void updatePlay(Piece* test); //Player input happened
+	void updateGame(); 
 	void updatePlayerInput(); //Player input happened
 
 	void updateRealPositions();
@@ -147,7 +153,6 @@ private:
 
 	std::vector<Piece> connectedPieces;
 
-	int linesBursted[7] = {};
 	int currPlayState;
 	int currSound;
 	int gameSpeed;

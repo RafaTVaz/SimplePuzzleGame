@@ -14,6 +14,7 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 	//Texture filtering Default is nearest pixel sampling, what is wanted for pixel art
 	//TODO for fullscreen bool: SDL_WINDOW_FULLSCREEN_DESKTOP 
 	window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenW, screenH, SDL_WINDOW_SHOWN);
+	//SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if (window == NULL)
 	{
 		printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -21,7 +22,7 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 	else
 	{
 		
-		//Get window surface Not compatible with rendering
+		//Get window surface is Not compatible with rendering
 		/*screenSurface = SDL_GetWindowSurface(window);
 
 		if (screenSurface == NULL)
@@ -61,9 +62,11 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 				printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
 				window = NULL;
 			}
-			Mix_Volume(-1, MIX_MAX_VOLUME / 2);
+			Mix_Volume(-1, MIX_MAX_VOLUME/ 3);      //sound effects
+			Mix_VolumeMusic(MIX_MAX_VOLUME / 25);	//music
 		}
 	}
+
 }
 
 RenderWindow::~RenderWindow()
@@ -72,7 +75,7 @@ RenderWindow::~RenderWindow()
 	delete gameCurrent;
 	gameCurrent = NULL;
 
-	//Destroy all loaded images, text, sprites
+	//Destroy all loaded images, text, sprites, music
 	destroyLoadedMedia();
 
 	//Destroy window
@@ -81,7 +84,6 @@ RenderWindow::~RenderWindow()
 	window = NULL;
 	renderer = NULL;
 
-
 	//Quit SDL subsystems
 	Mix_Quit();
 	TTF_Quit();
@@ -89,7 +91,7 @@ RenderWindow::~RenderWindow()
 	SDL_Quit();
 }
 
-
+//receives text and screen position
 void RenderWindow::drawText(const char* text, int x, int y) 
 {
 	SDL_assert(text);
@@ -104,6 +106,7 @@ void RenderWindow::drawText(const char* text, int x, int y)
 	SDL_FreeSurface(pSurface);
 }
 
+//receives text and screen position, font and font colour
 void RenderWindow::drawText(const char* text, int x, int y, TTF_Font* font, SDL_Color color)
 {
 	SDL_assert(text);
@@ -155,21 +158,21 @@ bool RenderWindow::loadMedia()
 
 	//Open the font
 	int fontSize = FONT_BIG;
-	fontBig = TTF_OpenFont("assets/lazy.ttf", fontSize);
+	fontBig = TTF_OpenFont("assets/Minecraft.ttf", fontSize);
 	if (fontBig == NULL)
 	{
 		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
 		success = false;
 	}
 	fontSize = FONT_SMALL;
-	fontSmall = TTF_OpenFont("assets/lazy.ttf", fontSize);
+	fontSmall = TTF_OpenFont("assets/Minecraft.ttf", fontSize);
 	if (fontSmall == NULL)
 	{
 		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
 		success = false;
 	}
 	fontSize = FONT_MICRO;
-	fontMicro = TTF_OpenFont("assets/lazy.ttf", fontSize);
+	fontMicro = TTF_OpenFont("assets/Minecraft.ttf", fontSize);
 	if (fontMicro == NULL)
 	{
 		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -206,8 +209,8 @@ bool RenderWindow::loadMedia()
 
 	//Load Sounds
 
-		//Load music
-	/*gSound_Music = Mix_LoadMUS("21_sound_effects_and_music/beat.wav");
+	//Load music
+	/*gSound_Music = Mix_LoadMUS("assets/sounds/Abstraction_-_Three_Red_Hearts_-_Rabbit_Town.wav");
 	if (gSound_Music == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
@@ -218,14 +221,19 @@ bool RenderWindow::loadMedia()
 	gSound_Pop = Mix_LoadWAV("assets/sounds/hit.wav");
 	if (gSound_Pop == NULL)
 	{
-		printf("Failed to load scratch sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		
+		
+		
+		("Failed to load scratch sound effect! SDL_mixer Error: %s\n", Mix_GetError());
 		success = false;
 	}
 
 	gSound_Input = Mix_LoadWAV("assets/sounds/input.wav");
 	if (gSound_Input == NULL)
 	{
-		printf("Failed to load high sound effect! SDL_mixer Error: %s\n", Mix_GetError());
+		
+		
+		("Failed to load high sound effect! SDL_mixer Error: %s\n", Mix_GetError());
 		success = false;
 	}
 
@@ -270,6 +278,10 @@ bool RenderWindow::loadMedia()
 	return success;
 }
 
+/**
+* loads image and creates texture
+* @returns text££ure£@@@££@s
+*/
 SDL_Texture* RenderWindow::loadTexture(const char* p_path)
 {
 	//The final texture
@@ -309,7 +321,7 @@ SDL_Texture* RenderWindow::loadTexture(const char* p_path)
 * 	// [ 1 | 3 ]
 *	// [ 2 | 4 ]
 * 
-* @return loadTexture(path to spriteSheet)
+* @return loadTexture(path to spriteSheet), returns texture
 */
 SDL_Texture* RenderWindow::loadSpriteSheet(const char* p_path)
 {
@@ -372,6 +384,9 @@ SDL_Texture* RenderWindow::loadSpriteSheet(const char* p_path)
 	return loadTexture(p_path);
 }
 
+/**
+* clears screen and renders all things to render, and music
+*/
 void RenderWindow::display()
 {
 	//Clear screen
@@ -384,14 +399,14 @@ void RenderWindow::display()
 	//Update screen
 	SDL_RenderPresent(renderer);
 	countedFrames++;
+	//If there is no music playing FIXME
+	if (Mix_PlayingMusic() == 0)
+	{
+		//Play the music
+		Mix_PlayMusic(gSound_Music, -1);
+	}
 }
 
-void RenderWindow::displayUI()
-{//not working
-	renderUI();
-	//Update screen
-	SDL_RenderPresent(renderer);
-}
 
 void RenderWindow::renderBackground()
 {
@@ -459,9 +474,12 @@ void RenderWindow::renderUI()
 	{
 		x = screenW * 3 / 5;
 		y = screenH - 3* FONT_BIG*scale;
-		drawText("High Score:", x, y, fontBig, colWhite);
+
+		x = screenW * 3 / 5;
+		y = 50 * scale + 5 * FONT_BIG;
+		drawText("High Score:", x, y, fontSmall, colWhite);
 		_gcvt_s(tempText, sizeof(tempText), gameCurrent->getHighscore(), 10);
-		drawText(tempText, x, y + scale + FONT_BIG, fontBig, colWhite);
+		drawText(tempText, x + 56 * scale, y, fontSmall, colWhite);
 
 		x = screenW *3/5;
 		y = 50 * scale + 3 *FONT_BIG;
@@ -480,27 +498,34 @@ void RenderWindow::renderUI()
 		double t_time = gameCurrent->getTimePassed();
 		int num = floor(log10(t_time)) > 0 ? floor(log10(t_time)): 0;
 		num++;
-		//printf("num :%d		log: %f		floor; %f\n", num, log10(t_time), floor(log10(t_time)));
 		drawText("Time:", x, y, fontSmall, colWhite);
 		_gcvt_s(tempText, sizeof(tempText), t_time, num);
 		drawText(tempText, x + 25 * scale, y , fontSmall, colWhite);
 	}
-
+/*INSTRUCTIONS********************************/
 	x = 10 * scale;
 	y = screenH - 3 * FONT_SMALL;
-	//drawText("GAME OVER",				screenW/2, 10*PIXEL_SCALE, fontBig, colWhite);
 	drawText("Left/Right: move Piece | Up: Hard Drop | Down: Slow Drop", x, y, fontSmall, colWhite);
 
 	x = 10 * scale;
 	y = screenH -  30;
-	//drawText("GAME OVER",				screenW/2, 10*PIXEL_SCALE, fontBig, colWhite);
-	drawText("Z: Rotate | P: Pause", x, y, fontSmall, colWhite);		
+	drawText("Z: Rotate | P: Pause | M: Mute Music", x, y, fontSmall, colWhite);		
 }
 
 void RenderWindow::playSounds()
 {
+	//what sound is supposed to play according to game
 	int soundID = gameCurrent->getSound();
 	
+	if (gameCurrent->isMute()) {
+		Mix_PauseMusic();
+	}
+	else if (Mix_PausedMusic() == 1 && gameCurrent->getCurrentPlayState()!= gameCurrent->playState.gameOver)
+	{
+		//Resume the music
+		Mix_PlayMusic(gSound_Music, -1);
+	}
+
 	switch (soundID)
 	{
 	case gameCurrent->sounds.input:
@@ -529,11 +554,20 @@ void RenderWindow::playSounds()
 		break;
 	case gameCurrent->sounds.lost:
 		Mix_PlayChannel(-1, gSound_GameOver, 0);
+		Mix_PauseMusic();
 		break;
 
 	
 	}	
 }
+
+int RenderWindow::getRealGridStart() {
+	int pixelStart = GRID_START * PIXEL_SCALE;
+	int shakeVal = gameCurrent->getShake();
+	pixelStart	+= ((rand() % 2) == 0 ? -shakeVal : shakeVal);
+	gameCurrent->lowerShake();
+	return pixelStart;
+};
 
 /**
 *	Renderer gets generic position from piece
@@ -604,15 +638,13 @@ void RenderWindow::renderPlayPieces()
 	* animSprite:
 	*	 0 - normal
 	*	 1 - highligh normal
-	*	 3 - squish
-	*	 4 - white
-	*	 6 - long (falling)
-	*	 7 - wide eye
+	*	 3 - placed
+	*	 4 - final move
+	*	 6 - falling (not used)
+	*	 7 - gray (not used)
 	*
 	*	SDL_RenderCopy(renderer, spriteSheet, &spriteClips[id][animSprite], &pos);
 	*/
-	//has to be animation depepndante not buffer
-	// animSprite = gameCurrent->testPiece.pos.buffer % 3 * 3; //changes between 0 and 3 
 
 	if (gameCurrent->getCurrentPlayState() == FINAL_MOVE)
 		animSprite = 4;
@@ -624,8 +656,6 @@ void RenderWindow::renderPlayPieces()
 		otherPos = updateRectPos(gameCurrent->testPiece.otherPiece, mapStart, spriteSize);
 		SDL_RenderCopy(renderer, spriteSheet, &spriteClips[gameCurrent->testPiece.otherPiece.id][0], &playerPos[1]);
 	}
-
-
 }
 
 void RenderWindow::setGame(Game* gameInstance, double* p_fps)
@@ -674,5 +704,3 @@ bool RenderWindow::destroyLoadedMedia()
 
 	return true;
 }
-
-

@@ -50,12 +50,6 @@
     <Image Include="assets\background-blue.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="assets\Sprites-Page.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="assets\PuyoPuyo-Sprites.png">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="assets\Sprites-game.png">
       <Filter>Resource Files</Filter>
     </Image>
@@ -79,6 +73,9 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="assets\lazy.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
+    <Font Include="assets\Minecraft.ttf">
       <Filter>Resource Files</Filter>
     </Font>
   </ItemGroup>
@@ -110,5 +107,11 @@
     <Media Include="assets\sounds\move.wav">
       <Filter>Resource Files\Sounds</Filter>
     </Media>
+    <Media Include="assets\sounds\Abstraction_-_Three_Red_Hearts_-_Rabbit_Town.wav">
+      <Filter>Resource Files\Sounds</Filter>
+    </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
   </ItemGroup>
 </Project>

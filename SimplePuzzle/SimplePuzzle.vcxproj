@@ -150,10 +150,8 @@
     <Image Include="assets\background-blue.png" />
     <Image Include="assets\background.png" />
     <Image Include="assets\Frame.png" />
-    <Image Include="assets\PuyoPuyo-Sprites.png" />
     <Image Include="assets\sprite-1.png" />
     <Image Include="assets\Sprites-game.png" />
-    <Image Include="assets\Sprites-Page.png" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h" />
@@ -164,8 +162,10 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="assets\lazy.ttf" />
+    <Font Include="assets\Minecraft.ttf" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="assets\sounds\Abstraction_-_Three_Red_Hearts_-_Rabbit_Town.wav" />
     <Media Include="assets\sounds\coin.wav" />
     <Media Include="assets\sounds\explosion.wav" />
     <Media Include="assets\sounds\gameOver.wav" />
@@ -175,6 +175,9 @@
     <Media Include="assets\sounds\newWave.wav" />
     <Media Include="assets\sounds\rotate.wav" />
     <Media Include="assets\sounds\set.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

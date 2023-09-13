@@ -22,7 +22,7 @@ void PlayerPiece::reset()
 /**
 *	Because of Pixel art speed nedds to be locked to pixels and divisible by 16
 *	jumps need to be 2 by 2 NOT SURE
-*
+*	this specific override is not really needed but could be useful for polishing smoother falling
 */
 void PlayerPiece::bufferMove() 
 {//14 because 16 in already beginning of next position
@@ -57,6 +57,7 @@ void PlayerPiece::bufferMove(int n)
 		pos.buffer = 0;
 }
 
+//@returns real on screen pixel position
 Position PlayerPiece::getRealPos()
 {
 	if (animPos.animType > 0)
@@ -66,6 +67,8 @@ Position PlayerPiece::getRealPos()
 	return Piece::getRealPos();
 	
 }
+
+//@returns real on screen pixel position
 Position PlayerPiece::getOtherRealPos()
 {
 

@@ -1,6 +1,15 @@
-//FIXME
-/*This source code copyrighted by Lazy Foo' Productions 2004-2023
-and may not be redistributed without written permission.*/
+/**
+*	BAHBLE - 13/09/2023
+* 
+* A simple Puyo style game,
+* made to learn C++ and SDL
+* Everything but the font was made by me
+* 
+*	Pixel Art made with Asesprite
+*	Sound Effects made with DrPetter's sfxr [http://www.drpetter.se/project_sfxr.html]
+*	Main song is from [https://abstractionmusic.bandcamp.com/album/three-red-hearts]
+*	Implemented SDL with the help of LazyFoo's lovely tutorial [https://lazyfoo.net/tutorials/SDL]
+*/
 
 //Using SDL, SDL_image, standard IO, and strings
 #include <SDL.h>
@@ -14,7 +23,7 @@ and may not be redistributed without written permission.*/
 #include "Game.h"
 
 
-//Screen dimension constants  4x3 ratio old school look
+//Screen dimension constants  1x1 ratio for old school look
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 640;
 
@@ -45,7 +54,11 @@ bool init()
 	//Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 	{
-		printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());	
+		
+		
+		
+		
+		("SDL could not initialize! SDL Error: %s\n", SDL_GetError());	
 		success = false;
 	}
 	else
@@ -54,11 +67,8 @@ bool init()
 		gWindow = new RenderWindow("SDL Tutorial", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		if (gWindow == NULL)
-		{
 			success = false;
-		}
 	}
-
 
 	return success;
 }
@@ -79,7 +89,6 @@ void calculateFPS(float& t_elapsed, Uint64 t_start, Uint64 t_end, int& t_counter
 void close()
 {
 	//Free resources and close SDL
-	//gWindow->close();
 
 	//delete gameLogic; //is deleted in gwindow
 	delete gWindow;
@@ -94,24 +103,22 @@ int main(int argc, char* args[])
 	//Start up SDL and create window
 	if (!init())
 	{
-		printf("Failed to initialize!\n");
+		
+		
+		("Failed to initialize!\n");
 	}
 	else
 	{
-		//Load Background
-		//if (!gWindow->loadBackground("assets/background.png"))
+		//Load Textures, Text and Music
 		if (!gWindow->loadMedia())
 		{
-			printf("Failed to load Background!\n");
+			
+			
+			("Failed to load Background!\n");
 		}
 		else
 		{
 			
-			////Main loop flag
-			//bool quit = false;
-
-			////Event handler
-			//SDL_Event e;
 			int counter = 0; float elapsed = 0;
 			double fps = 0;
 			Uint64 start = 0, end = 0;
@@ -120,7 +127,7 @@ int main(int argc, char* args[])
 			gameLogic = new Game();
 			gWindow->setGame(gameLogic, &fps);
 			
-			//While application is running
+			//Main loop; While application is running
 			while (!gameLogic->isQuit())
 			{
 				counter++;

@@ -13,6 +13,7 @@ Game::Game()
 	gameSpeed = dropSpeed.slow;
 	currPlayState = playState.starting;
 	softDropSpeed = dropSpeed.fast;
+	currSound = 0;
 	connectedPieces.clear();
 	
 	// Initialize each element to an empty/default state
@@ -22,8 +23,6 @@ Game::Game()
 		}
 	}
 	testPiece.reset();
-
-	//printf("Piece id = %d     Other id = %d", testPiece.id, testPiece.otherPiece.id);
 }
 
 Game::~Game()
@@ -72,8 +71,12 @@ void Game::checkKeyPress()
 			gameInput.rotateClockwise = true; gameInput.pressed = true;
 			break;
 
-		case SDLK_x:
+		/*case SDLK_x: //not used
 			gameInput.rotateAnticlockwise = true; gameInput.pressed = true;
+			break;*/
+
+		case SDLK_m:
+			sounds.mute = !sounds.mute;
 			break;
 
 		case SDLK_p:
@@ -89,35 +92,30 @@ void Game::checkKeyPress()
 
 void Game::run()
 {
-	//Piece* testPiece = new Piece();
-
 	currSound = -1;
 	//Handle events on queue
 	while (SDL_PollEvent(&event) != 0)
 	{
-		//User requests quit
 		if (event.type == SDL_QUIT)
-		{
 			quit = true;
-		}
-
+		
 		checkKeyPress();
 
 		if (gameInput.pressed)
-		{
 			updatePlayerInput();
-			//printf("%d\n", testPiece.pos.buffer);
-		}
 	}
-	//printf("Time: %d\n", timer.getTicks() / 1000);
 	updateGame();
 	updateRealPositions();
-
 }
 
+/**
+* Looks at input given by the player, 
+*	makes the basic changes and checks; changes game state if needed
+*/
 void Game::updatePlayerInput()
 {
 	testDrop = false;
+/*PAUSE***************************/
 	if (gameInput.pause)
 	{
 		if(timer.isPaused())
@@ -140,14 +138,16 @@ void Game::updatePlayerInput()
 	// move Piece is not paused and playable
 	if (!timer.isPaused())
 	{
+/*START***************************/
 		if (currPlayState == playState.starting || currPlayState == playState.gameOver)
 		{
 			if (gameInput.start)
 				gameStart = true;
 		}
-
+		
 		if (currPlayState == playState.playing || currPlayState == playState.finalMove)
 		{
+/*MOVE***************************/
 			if (gameInput.moveLeft)
 			{
 				Position testPos;
@@ -171,7 +171,6 @@ void Game::updatePlayerInput()
 					}
 					currSound = sounds.move;
 				}
-				//printf("Left: %d | %d \n", testPiece.pos.x, testPiece.pos.y);
 			}
 			else if (gameInput.moveRight)
 			{
@@ -196,10 +195,11 @@ void Game::updatePlayerInput()
 					}
 					currSound = sounds.move;
 				}
-				//printf("Right: %d | %d \n", testPiece.pos.x, testPiece.pos.y);
 			}
+/*DROP***************************/
 			else if (gameInput.hardDrop)
 			{
+				//what piece reaches a placed piece or floor first
 				int y1 = testMaxFall(testPiece.pos);
 				int y2 = testMaxFall(testPiece.otherPiece.pos);
 				int dropY = (y1 < y2) ? y1 : y2;
@@ -208,8 +208,6 @@ void Game::updatePlayerInput()
 				testPiece.pos.y += dropY;
 				testPiece.otherPiece.pos.y += dropY;
 				testPiece.pos.buffer = testPiece.otherPiece.pos.buffer = 0;
-
-				//printf("Up: %d | %d \n", testPiece.pos.x, testPiece.pos.y);
 			}
 			else if (gameInput.softDrop && currPlayState != playState.finalMove)
 			{
@@ -220,23 +218,24 @@ void Game::updatePlayerInput()
 			
 				++testPos.y;
 				if (isMovePossible(testPos))
-				{//FIXME make move down while pressed without pause
+				{//TODO make move down while pressed without pause
 					//2, 4, 8 ( 16 % buffermove has to be 0 for smooth animation
 					testPiece.bufferMove(softDropSpeed);
 					testPiece.otherPiece.bufferMove(softDropSpeed);
 				}
-				//printf("Down: %d | %d \n", testPiece.pos.x, testPiece.pos.y);
 			}
+/*ROTATE***************************/
 			else if (gameInput.rotateClockwise)
 			{
+				//checks if piece can rotate freely or has to move to rotate
+
 				int type = -1;
 				Position pPivot = testPiece.pos;
 				Position pRotate = testPiece.otherPiece.pos;
 				Position pTest;
 				testPiece.initAnimPos();
 
-
-				//Above, move to Right 
+			//Above, move to Right 
 				if (pPivot.y > pRotate.y)
 				{
 					type = animTiming.up_right;
@@ -257,14 +256,14 @@ void Game::updatePlayerInput()
 						currSound = sounds.rotate;
 					}
 				}
-				//Right, move to Below 
+			//Right, move to Below 
 				else if (pPivot.x < pRotate.x)
 				{
 					type = animTiming.right_down;
 					pPivot.y++;
 					pTest = pPivot;
 					pTest.y++;
-					if (isMovePossible(pPivot) && !isDownMovePossible(pPivot))
+					if (isMovePossible(pPivot) && isDownMovePossible(pPivot))
 					{
 						testPiece.otherPiece.pos = pPivot;
 						testPiece.setNewAnimPos(); 
@@ -278,7 +277,7 @@ void Game::updatePlayerInput()
 						currSound = sounds.rotate;
 					}
 				}
-				//Below, move to Left 
+			//Below, move to Left 
 				else if (pPivot.y < pRotate.y)
 				{
 					type = animTiming.down_left;
@@ -300,7 +299,7 @@ void Game::updatePlayerInput()
 						currSound = sounds.rotate;
 					}
 				}
-				//Left, move to Above 
+			//Left, move to Above 
 				else if (pPivot.x > pRotate.x)
 				{
 					type = animTiming.left_up;
@@ -320,12 +319,14 @@ void Game::updatePlayerInput()
 					}
 				}
 			}
-
 		}
 	}
 }
 
-
+/**
+* Checks current gameState and acts accordingly
+* does everything that is automated, with or without player input
+*/
 void Game::updateGame()
 {
 	Uint32 currTime = timer.getTicks();
@@ -358,6 +359,11 @@ void Game::updateGame()
 		}
 		
 		break;
+	/**
+	* looks at playerPiece and checks 
+	* 1: if Piece can be placed (finalMove) 
+	* 2: if it's time to animate (buffer fall)
+	*/
 	case playState.playing:
 		if (isMoveFinal() )
 		{
@@ -381,9 +387,13 @@ void Game::updateGame()
 		}
 
 		break;
+	/**
+	* FINAL DECISION TIME BEFORE PIECE BEING PLACED
+	*	if time(fps_finalDecision) for final decision has passed
+	*	checks if game over:
+	*	if not, piece is placed inside matrix (clone)
+	*/
 	case playState.finalMove:
-
-		//FINAL DECISION TIME BEFORE PIECE BEING PLACED
 		if (animTiming.elapsedTime > 1000.f / animTiming.fps_finalDecision)
 		{
 			if (isGameOver())
@@ -401,8 +411,6 @@ void Game::updateGame()
 					pieceMatrix[i][j].connected = false;
 				}
 			}
-			//printf("FINALMOVE!!!: %f | %d \n", animTiming.elapsedTime, animTiming.fps_finalDecision);
-
 			//save piece in Matrix
 			pieceMatrix[testPiece.pos.x][testPiece.pos.y].clone(testPiece);
 			pieceMatrix[testPiece.otherPiece.pos.x][testPiece.otherPiece.pos.y].clone(testPiece.otherPiece);
@@ -410,21 +418,24 @@ void Game::updateGame()
 
 			currSound = sounds.set;
 		}
-		
 		break;
+	/**
+	* checks if cluster of pieces need to be burst
+	*	loops with playState.waiting to keep burstin after pieces fall
+	*/
 	case playState.bursting:
-
 		burstEnd = true;
 
-		if (searchCluster()) {
+		if (searchCluster()) { //if there is a cluster of 4+ pieces
 			burstEnd = false;
 			addBurstPoints();
 			destroyConnected();
 			currPlayState = playState.waiting;
 			currSound = sounds.burst;
+			animTiming.screenShake += 5;
 		}
 			
-		if (burstEnd)
+		if (burstEnd) //if no cluster is found
 		{
 			if (gameReset) 
 			{
@@ -435,28 +446,27 @@ void Game::updateGame()
 				break;
 			}
 			//calculate all points and update
-			//std::fill(linesBursted, linesBursted + 7, 0);
-			//printf("BURSTEND\n");
 			testPiece.reset();
 			score.burstScore = score.currBurstPoints;
 			addToScore();
 
-			//speed up after 30 seconds
+			/**
+			* speed up after speedUpTime (15) seconds
+			* also drops a line of pieces
+			* goes to playState.waiting because line needs to fall
+			*/
 			if (timer.getTicks() / 1000 > dropSpeed.speedUpTime) 
 			{
 				dropSpeed.speedUpTime += dropSpeed.speedUpTick;
 				fillLine();
 				currSound = sounds.wave;
-				if (gameSpeed < dropSpeed.impossible) 
+
+				if (gameSpeed < dropSpeed.impossible) //if <max speed
 				{
 					gameSpeed++;
-					printf("SPEED UP: %d\n", gameSpeed);
-				
-					if (gameSpeed == dropSpeed.fast) 
-						dropSpeed.speedUpTick *= 2;
+					/*if (gameSpeed > dropSpeed.fast) 
+						dropSpeed.speedUpTick *= 2;*/
 				}
-
-
 				animTiming.elapsedTime = 0;
 				currPlayState = playState.waiting;
 				break;
@@ -467,6 +477,10 @@ void Game::updateGame()
 		}
 
 		break;
+	/**
+	* Updates buffer and positions of matrix pieces until they can no longer fall
+	*	goes playState.bursting after all pieces are set
+	*/
 	case playState.waiting:
 
 		bool falling = false;
@@ -513,7 +527,7 @@ void Game::updateGame()
 }
 
 
-
+//after starting fresh or game over
 void Game::resetGame() 
 {
 	timer.start();
@@ -531,6 +545,7 @@ void Game::resetGame()
 	gameReset = true;
 }
 
+//fills top of the matrix with <=40 pieces to start of the game
 void Game::fillMatrix()
 {
 	int maxPieces = 40;
@@ -551,6 +566,8 @@ void Game::fillMatrix()
 	}
 endofloop:;
 }
+
+//fills top line with pieces (not line 0 to keep that free for player to move)
 void Game::fillLine()
 {
 	int j = 1;
@@ -565,7 +582,11 @@ void Game::fillLine()
 	}
 }
 
-
+/**
+* Checks buffer, player input and position to put the pieces in their correct position on screen
+* in game only 16x8 positions exist; this would lead to very choppy gameplay
+* needs to draw sprites in different position to give the game a smooth look
+*/
 void Game::updateRealPositions()
 {
 	if(testPiece.animPos.animType >= 0)
@@ -578,8 +599,19 @@ void Game::updateRealPositions()
 		testPiece.animPos.elapsedTime += deltaTime;
 
 /****Rotation***********************/
-		if (testPiece.animPos.animType == 0)//rotation worked normally
-		{//Rotate 90º clockwise, no point in rotating anticlockwise, game does not become more fun, just more buttons
+	/**
+	* rotates other piece smoothly around playerpiece
+	* maxCounter is number of positions the rotation has
+	* writes to realPos because the animation is only for the renderer, 
+	* game does not care about animations only positions and buffer
+	* 
+	* Rotate 90º clockwise, no point in rotating anticlockwise, 
+	*  game does not become more fun, just more buttons
+	*/
+
+	//rotation worked normally
+		if (testPiece.animPos.animType == 0)
+		{
 			int* counter = &testPiece.animPos.ctr;
 			double maxCounter = testPiece.animPos.max;
 
@@ -624,11 +656,13 @@ void Game::updateRealPositions()
 				*counter = 0;
 			}
 		}
-		else if(testPiece.animPos.animType > 0 && testPiece.animPos.animType < 5) //obstruction in roation
+	//obstruction in roation
+		else if(testPiece.animPos.animType > 0 && testPiece.animPos.animType < 5) 
 		{
 			int* counter = &testPiece.animPos.ctr;
 			double maxCounter = 3; //  animations need to be int when   60/frames -> 60/4=15ms
 			int x, y;
+		//Up to Right
 			if (testPiece.animPos.animType == animTiming.up_right)
 			{//orig shift  left | other shift down
 				if (testPiece.animPos.elapsedTime >= 1000.f / 60)
@@ -660,6 +694,7 @@ void Game::updateRealPositions()
 					*counter = 0;
 				}
 			}
+		//Right to Down
 			else if (testPiece.animPos.animType == animTiming.right_down)
 			{//orig shift up | other shift left
 				if (testPiece.animPos.elapsedTime >= 1000.f / 60)
@@ -691,6 +726,7 @@ void Game::updateRealPositions()
 					*counter = 0;
 				}
 			}
+		//Down to Left
 			else if (testPiece.animPos.animType == animTiming.down_left)
 			{//orig shift right | other shift up
 				if (testPiece.animPos.elapsedTime >= 1000.f / 60)
@@ -722,6 +758,7 @@ void Game::updateRealPositions()
 					*counter = 0;
 				}
 			}
+		//Left to Up
 			else if (testPiece.animPos.animType == animTiming.left_up)
 			{//orig shift down | other shift right
 				if (testPiece.animPos.elapsedTime >= 1000.f / 60)
@@ -755,6 +792,11 @@ void Game::updateRealPositions()
 			}
 		}
 /****Buffer Move***********************/
+	/**
+	* for buffer not to feel choppy there needs to be a position interpolation
+	* with pixel art movement needs to be pixel by pixel
+	*	can't use interpolator but need to calculate how many pixels are moved
+	*/
 		else if(testPiece.animPos.animType == animTiming.buffer) //buffer Move
 		{
 			int* counter = &testPiece.animPos.ctr;
@@ -763,7 +805,7 @@ void Game::updateRealPositions()
 			if (testPiece.animPos.elapsedTime >= 1000.f / 60)
 			{
 				//shift = 7/8 | 6/8 | 5/8 | 4/8 etc per tick
-				int shift = (maxCounter - (*counter * 2))  * testPiece.screenMultiplier;
+				int shift = (maxCounter - (*counter * 2))  * testPiece.getScreenMultiplier();
 				//testPiece
 				x = (testPiece.pos.x + 1) * testPiece.getGridSize();
 				y = (testPiece.pos.y + 1) * testPiece.getGridSize() - shift + testPiece.getRealBuffer();
@@ -788,6 +830,7 @@ void Game::updateRealPositions()
 			}
 		}
 /****Left/Right Move***********************/
+	//same thing that is happening to buffer move basically
 		else if (testPiece.animPos.animType == animTiming.move_right) //buffer Move
 		{
 			int* counter = &testPiece.animPos.ctr;
@@ -796,7 +839,7 @@ void Game::updateRealPositions()
 			if (testPiece.animPos.elapsedTime >= 1000.f / 60)
 			{
 				//shift = 7/8 | 6/8 | 5/8 | 4/8 etc per tick
-				int shift = (maxCounter - (*counter * 2)) * testPiece.screenMultiplier;
+				int shift = (maxCounter - (*counter * 2)) * testPiece.getScreenMultiplier();
 				//testPiece
 				x = (testPiece.pos.x + 1) * testPiece.getGridSize() - shift;
 				y = (testPiece.pos.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
@@ -830,7 +873,7 @@ void Game::updateRealPositions()
 			{
 				//shift = 7/8 | 6/8 | 5/8 | 4/8 etc per tick
 				//int shift = (maxCounter - (*counter * 2)) * testPiece.screenMultiplier;
-				int shift = (maxCounter - (*counter * 2)) * testPiece.screenMultiplier;
+				int shift = (maxCounter - (*counter * 2)) * testPiece.getScreenMultiplier();
 				//testPiece
 				x = (testPiece.pos.x + 1) * testPiece.getGridSize() + shift;
 				y = (testPiece.pos.y + 1) * testPiece.getGridSize() + testPiece.getRealBuffer();
@@ -877,7 +920,6 @@ bool Game::searchCluster()
 				connectedPieces.clear();
 				//find recursively 
 				groupSize = findGroupSize(i, j);
-				//printf("Size: %d\n", groupSize);
 				if (groupSize >= 4)
 				{
 					resetConnected();
@@ -885,7 +927,6 @@ bool Game::searchCluster()
 
 				}
 			}
-
 		}
 	}
 	resetConnected();
@@ -906,6 +947,12 @@ void Game::resetConnected()
 	}
 }
 
+/**
+* find connected pieces recursively
+*	when returning adds one to counter
+*	counter is the size of the cluster
+* @returns cluster size
+*/
 int Game::findGroupSize(int x, int y)
 {
 	int n = 1;
@@ -918,7 +965,7 @@ int Game::findGroupSize(int x, int y)
 
 	//clockwise search; id = id is same color
 	
-	/*******UP*******/
+/*******UP*******/
 	temp.x = x, temp.y = y-1;
 	if (isMovePossible(temp) && isMatrixOccupied(temp) &&
 		pieceMatrix[temp.x][temp.y].id == id && !pieceMatrix[temp.x][temp.y].connected)
@@ -928,7 +975,7 @@ int Game::findGroupSize(int x, int y)
 		n += findGroupSize(temp.x, temp.y);
 	}
 
-	/*******RIGHT*******/
+/*******RIGHT*******/
 	temp.x = x + 1, temp.y = y; 
 		if (isMovePossible(temp) && isMatrixOccupied(temp) &&
 			pieceMatrix[temp.x][temp.y].id == id && !pieceMatrix[temp.x][temp.y].connected)
@@ -938,7 +985,7 @@ int Game::findGroupSize(int x, int y)
 			n += findGroupSize(temp.x, temp.y);
 		}
 
-	/*******DOWN*******/
+/*******DOWN*******/
 	temp.x = x, temp.y = y + 1;
 	if (isMovePossible(temp) && isMatrixOccupied(temp) &&
 		pieceMatrix[temp.x][temp.y].id == id && !pieceMatrix[temp.x][temp.y].connected)
@@ -948,7 +995,7 @@ int Game::findGroupSize(int x, int y)
 		n += findGroupSize(temp.x, temp.y);
 	}
 
-	/*******LEFT*******/
+/*******LEFT*******/
 	temp.x = x - 1, temp.y = y;
 	if (isMovePossible(temp) && isMatrixOccupied(temp) &&
 		pieceMatrix[temp.x][temp.y].id == id && !pieceMatrix[temp.x][temp.y].connected)
@@ -957,7 +1004,6 @@ int Game::findGroupSize(int x, int y)
 		pieceMatrix[temp.x][temp.y].connected = true;
 		n += findGroupSize(temp.x, temp.y);
 	}
-
 	return n;
 }
 
@@ -971,18 +1017,10 @@ void Game::addToScore()
 {
 	score.burstCount = 0;
 	score.currScore += score.currBurstPoints;
-
-
-	printf("Burst Points:  %d\n", score.currBurstPoints);
-	printf("Current Score: %d\n\n", score.currScore);
-
 	score.currBurstPoints = 0;
 
 	if (score.currScore > score.highscore)
-	{
 		score.highscore = score.currScore;
-		printf("		!!NEW HIGH SCORE!!\n");
-	}
 }
 
 void Game::addBurstPoints()
@@ -991,11 +1029,10 @@ void Game::addBurstPoints()
 	score.currBurstPoints += (connectedPieces.size() - 3) * 100 * score.burstCount;
 }
 
+//bursts all pieces in the cluster connectedPieces
 void Game::destroyConnected()
 {
-	printf("DESTROY CONNECTED\n");
-
-	//burst all pieces in the cluster
+	
 	for (int i = 0; i < connectedPieces.size(); i++)
 	{
 		pieceMatrix[connectedPieces[i].pos.x][connectedPieces[i].pos.y].burst();
@@ -1038,7 +1075,7 @@ bool Game::isMovePossible(Position newPos)
 	return false;
 }
 
-//checks if position is free and in bounds
+//@returns if position is free and in bounds
 bool Game::isSideMovePossible(Position newPos)
 {
 	Position temp = newPos;
@@ -1054,24 +1091,24 @@ bool Game::isSideMovePossible(Position newPos)
 	return false;
 }
 
+//@returns if position below is free & in bounds
 bool Game::isDownMovePossible(Position newPos)
 {
 	if (isMoveFinal(newPos))
 	{
-		return true;
+		return false;
 	}
 	newPos.y++;
 	if (isMatrixOccupied(newPos))
 	{
-		return true;
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
-/**
-*	Checks if piece is end at of play area or has a piece below
-*/
+
+//@returns if player/other piece is end at of play area or has a piece below
 bool Game::isMoveFinal()
 {
 	Position currPos = testPiece.pos;
@@ -1089,7 +1126,7 @@ bool Game::isMoveFinal()
 	
 	return false;
 }
-
+//@returns if piece is end at of play area or has a piece below
 bool Game::isMoveFinal(Position currPos)
 {
 	if (currPos.y == 15) //or directly above other piece
@@ -1112,6 +1149,7 @@ bool Game::isGameOver()
 	return false;
 }
 
+//@returns how many free positions Piece has below
 int Game::testMaxFall(Position newPos)
 {
 	int ctr = 0;
@@ -1129,10 +1167,6 @@ int Game::testMaxFall(Position newPos)
 	return ctr+temp;
 }
 
-bool Game::isQuit()
-{
-	return quit;
-}
 
 
 

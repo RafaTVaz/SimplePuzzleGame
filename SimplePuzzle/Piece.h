@@ -21,6 +21,7 @@ struct Position
 	int buffer; //0 - 15   0 means grid position, rest is animation
 };
 
+//not used
 struct Color
 {
 	int r, g, b, a;
@@ -55,6 +56,7 @@ public:
 	void bufferMove();
 	void bufferMove(int n);
 
+	int getScreenMultiplier() {return screenMultiplier;};
 	int getGridSize();
 	int getRealBuffer();
 	Position getRealPos();
@@ -63,8 +65,8 @@ public:
 	void burst();
 	void clone(Piece clone);
 	PositionTransition animPos = {};
+protected:
 	int screenMultiplier;
 	int rel_to_ScreenGridSize;
-protected:
 };
 

@@ -11,7 +11,7 @@
 
 #include "Game.h"
 
-#define GRID_START  5	//0 or 0.5
+#define GRID_START  5	//5 pixels out from corner
 #define PIXEL_SCALE 2	//depends on size of window?
 #define NUM_PIECES	4	//num of different colored pieces
 #define NUM_SPRITES 21  //num of sprites per piece
@@ -32,14 +32,11 @@ public:
 	void setGame(Game* gameInstance, double* p_fps);
 
 private:
-	void displayUI();
 	void renderPieces();
 	void renderBackground();
 	void renderUI();
 	void playSounds();
-	int getRealGridStart() {
-		return GRID_START * PIXEL_SCALE;// *gameCurrent->testPiece.getGridSize();
-	};
+	int getRealGridStart();
 	SDL_Rect updateRectPos(Piece tempPiece, int t_mapStart, int t_pixels);
 	std::array<SDL_Rect, 2> updatePlayerRectPos(int t_mapStart, int t_pixels);
 	void drawText(const char* text, int x, int y);
@@ -83,7 +80,7 @@ private:
 	SDL_Texture* ui_IMG = NULL;
 
 	//The music that will be played
-	Mix_Music* gSound_Music = NULL; //gameOver?
+	Mix_Music* gSound_Music = NULL;
 
 	//The sound effects that will be used
 	Mix_Chunk* gSound_Pop = NULL;

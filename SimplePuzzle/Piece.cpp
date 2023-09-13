@@ -1,19 +1,18 @@
 #include "Piece.h"
 
-
 std::random_device rd;
 std::mt19937 gen(rd()); //random_engine
 
 Piece::Piece()
 {
-	id = random(0, 3);
+	id = random(0, 3); //random color
 	pos = {}; //{1,1} - {8,16}
 	
 	screenMultiplier = 2;
 	rel_to_ScreenGridSize = GRID_SIZE * screenMultiplier; //if there is a screen size change this should change
 }
 
-
+// @returns random between low and high
 int Piece::random(int low, int high)
 { //tested works
 	std::uniform_int_distribution<> dist(low, high);
@@ -56,22 +55,22 @@ void Piece::bufferMove(int n)
 		pos.buffer = 0;
 }
 
+//@returns real on screen pixel size of grid piece (16)
 int Piece::getGridSize()
 {
 	rel_to_ScreenGridSize = GRID_SIZE * screenMultiplier;
 	return rel_to_ScreenGridSize;
 }
 
+//@returns real on screen buffer size
 int Piece::getRealBuffer()
 {
 	return pos.buffer * screenMultiplier;
 }
 
+//@returns real on screen pixel position
 Position Piece::getRealPos()
 {
-	//if (realPos.buffer == 10)
-	//	return realPos;
-
 	Position realPos{
 		(pos.x+1) * getGridSize(),
 		(pos.y+1) * getGridSize() + getRealBuffer()
@@ -79,7 +78,7 @@ Position Piece::getRealPos()
 	return realPos;
 }
 
-
+//clones id, position
 void Piece::clone(Piece clone) 
 {
 	id = clone.id;
