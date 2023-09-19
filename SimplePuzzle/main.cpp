@@ -64,7 +64,7 @@ bool init()
 	else
 	{
 		//Create window
-		gWindow = new RenderWindow("SDL Tutorial", SCREEN_WIDTH, SCREEN_HEIGHT);
+		gWindow = new RenderWindow("Simple Game", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		if (gWindow == NULL)
 			success = false;

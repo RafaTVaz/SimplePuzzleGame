@@ -177,7 +177,7 @@
     <Media Include="assets\sounds\set.wav" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="readme.txt" />
+    <None Include="..\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
