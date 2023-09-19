@@ -210,12 +210,12 @@ bool RenderWindow::loadMedia()
 	//Load Sounds
 
 	//Load music
-	gSound_Music = Mix_LoadMUS("assets/sounds/Abstraction_-_Three_Red_Hearts_-_Rabbit_Town.wav");
+	/*gSound_Music = Mix_LoadMUS("assets/sounds/Abstraction_-_Three_Red_Hearts_-_Rabbit_Town.wav");
 	if (gSound_Music == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
 		success = false;
-	}
+	}*/
 
 	//Load sound effects
 	gSound_Pop = Mix_LoadWAV("assets/sounds/hit.wav");
