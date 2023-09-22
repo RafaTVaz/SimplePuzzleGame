@@ -30,6 +30,7 @@ RenderWindow::RenderWindow(const char* p_title, int p_width, int p_height)
 			printf("Surface could not be created! SDL Error: %s\n", SDL_GetError());
 			window = NULL;
 		}*/
+		
 
 		//Create renderer for window
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC |SDL_RENDERER_ACCELERATED);
@@ -121,35 +122,7 @@ void RenderWindow::drawText(const char* text, int x, int y, TTF_Font* font, SDL_
 	SDL_FreeSurface(pSurface);
 }
 
-bool RenderWindow::loadBackground(const char* p_path)
-{
-	//The final optimized image
-	SDL_Surface* optimizedSurface = NULL;
 
-	//Load image at specified path
-	SDL_Surface* loadedSurface = IMG_Load(p_path);
-	if (loadedSurface == NULL)
-	{
-		printf("Unable to load image %s! SDL_image Error: %s\n", p_path, IMG_GetError());
-		return false;
-	}
-	else
-	{
-		////Convert surface to screen format
-		backgroundPNG = SDL_ConvertSurface(loadedSurface, screenSurface->format, 0);
-		if (backgroundPNG == NULL)
-		{
-			printf("Unable to optimize image %s! SDL Error: %s\n", p_path, SDL_GetError());
-			return false;
-		}
-
-		//Get rid of old loaded surface
-		SDL_FreeSurface(loadedSurface);
-	}
-
-	//return optimizedSurface;
-	return true;
-}
 
 bool RenderWindow::loadMedia()
 {
@@ -192,13 +165,6 @@ bool RenderWindow::loadMedia()
 		printf("Failed to load texture UI image!\n");
 		success = false;
 	}
-	/*texture = loadSpriteSheet("assets/Sprites-Page.png");
-	if (texture == NULL)
-	{
-		printf("Failed to load texture sprite!\n");
-		success = false;
-	}*/
-	//spriteSheet = loadSpriteSheet("assets/PuyoPuyo-Sprites.png");
 	spriteSheet = loadSpriteSheet("assets/Sprites-game.png");
 	if (spriteSheet == NULL)
 	{
@@ -206,6 +172,13 @@ bool RenderWindow::loadMedia()
 		success = false;
 	}
 
+	iconPNG = IMG_Load("assets/icon.png");
+	if (iconPNG == NULL)
+	{
+		printf("Failed to load icon sprite!\n");
+		success = false;
+	}
+	SDL_SetWindowIcon( window, iconPNG);
 
 	//Load Sounds
 
@@ -307,6 +280,34 @@ SDL_Texture* RenderWindow::loadTexture(const char* p_path)
 	}
 
 	return newTexture;
+}
+
+SDL_Surface* RenderWindow::loadSurface(const char* p_path)
+{
+	//The final optimized image
+	SDL_Surface* optimizedSurface = NULL;
+
+	//Load image at specified path
+	SDL_Surface* loadedSurface = IMG_Load(p_path);
+	if (loadedSurface == NULL)
+	{
+		printf("Unable to load image %s! SDL_image Error: %s\n", p_path, IMG_GetError());
+	}
+	else
+	{
+		////Convert surface to screen format
+		optimizedSurface = SDL_ConvertSurface(loadedSurface, screenSurface->format, 0);
+		if (optimizedSurface == NULL)
+		{
+			printf("Unable to optimize image %s! SDL Error: %s\n", p_path, SDL_GetError());
+		}
+
+		//Get rid of old loaded surface
+		SDL_FreeSurface(loadedSurface);
+	}
+
+	//return optimizedSurface;
+	return optimizedSurface;
 }
 
 /**
@@ -682,10 +683,10 @@ bool RenderWindow::destroyLoadedMedia()
 
 
 	//Free Text and Images
-	if (backgroundPNG != NULL)
+	if (iconPNG != NULL)
 	{
-		SDL_FreeSurface(backgroundPNG);
-		backgroundPNG = NULL;
+		SDL_FreeSurface(iconPNG);
+		iconPNG = NULL;
 	}
 	TTF_CloseFont(fontBig);
 	TTF_CloseFont(fontSmall);

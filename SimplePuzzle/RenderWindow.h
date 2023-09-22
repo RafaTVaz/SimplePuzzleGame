@@ -41,7 +41,7 @@ private:
 	std::array<SDL_Rect, 2> updatePlayerRectPos(int t_mapStart, int t_pixels);
 	void drawText(const char* text, int x, int y);
 	void drawText(const char* text, int x, int y, TTF_Font* font, SDL_Color color);
-	bool loadBackground(const char* p_location);
+	
 	void renderPlayPieces();
 	bool destroyLoadedMedia();
 
@@ -67,7 +67,7 @@ private:
 	//					[Piece id  ][anition frame]
 	SDL_Rect spriteClips[NUM_PIECES][NUM_SPRITES] = {};
 
-
+	SDL_Surface* loadSurface(const char* p_location);
 	//Loads individual image as texture
 	SDL_Texture* loadTexture(const char* p_path);
 	SDL_Texture* loadSpriteSheet(const char* p_path);
@@ -95,5 +95,5 @@ private:
 	//The surface contained by the window
 	SDL_Surface* screenSurface = NULL;
 	//Current displayed PNG image
-	SDL_Surface* backgroundPNG = NULL;
+	SDL_Surface* iconPNG = NULL;
 };

@@ -150,6 +150,7 @@
     <Image Include="assets\background-blue.png" />
     <Image Include="assets\background.png" />
     <Image Include="assets\Frame.png" />
+    <Image Include="assets\icon.png" />
     <Image Include="assets\sprite-1.png" />
     <Image Include="assets\Sprites-game.png" />
   </ItemGroup>
